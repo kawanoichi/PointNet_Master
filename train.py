@@ -37,6 +37,36 @@ class Train:
     def train(self):
         self.load_param()
 
+        # for epoch in range(self.epochs):
+        #     # dt_now = datetime.datetime.now()
+        #     # print(dt_now)
+        #     data_number = 0
+        #     for i in range(DATASET_LEN):
+        #         train_images, train_labels = get_data(data_number)
+        #         if i == 0:
+        #             print("train_images.shape", train_images.shape)
+        #             print("train_labels.shape",train_labels.shape)
+                
+        #         train_step(train_images, train_labels, model, loss_object, optimizer, loss_average)
+        #         data_number += 1
+            
+        #     time = str(datetime.datetime.now())
+        #     template1 = "Epoch {}, time: {}, loss: {}"
+        #     print(template1.format(epoch+1, time[11:16], loss_average.result()))
+
+        #     train_loss_np = loss_average.result().numpy()
+        #     train_loss_history = np.append(train_loss_history, train_loss_np)
+
+        #     loss_average.reset_states()
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="学習を実行するファイル")  
     parser.add_argument("data_set", help="学習を行うデータセット")
