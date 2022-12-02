@@ -1,7 +1,0 @@
-{
-    "PTCLOUD" : "16384",
-    "OUTPUTPOINTS" : "1024",
-    "BATCH_SIZE" : "1",
-    "EPOCHS" : "5",
-    "DATASET_LEN" : "2048"
-}
