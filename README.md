@@ -15,3 +15,16 @@ python 3.6.13<br>
 numpy 1.19.5<br>
 tensorflow 1.13.1<br>
 pytorch 1.0.1<br>
+
+## データセット
+### ShapeNet
+データセット(以下のURLからShapeNetRendering.tgzをダウンロード)<br>
+https://cvgl.stanford.edu/data2/<br>
+スプリットデータ<br>
+https://drive.google.com/file/d/10FR-2Lbn55POB1y47MJ12euvobi6mgtc/view<br>
+pointcloud<br>
+https://drive.google.com/file/d/1cfoe521iTgcB_7-g_98GYAqO553W8Y0g/view<br>
+
+### Pix3D
+Pix3D dataset (~20 GB): https://github.com/xingyuansun/pix3d<br>
+Pix3D pointclouds (~13 MB): https://drive.google.com/open?id=1RZakyBu9lPbG85SyconBn4sR8r2faInV<br>
