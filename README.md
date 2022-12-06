@@ -2,6 +2,7 @@
 宮崎大学大学院　令和4,5年度  
 
 ## 環境
+Ubuntu     : 20.04<br>
 GPU        : NVIDIA GeForce RTX 3060 Ti<br>
 cuda       : 11.7<br>
 python     : 3.6.13<br>

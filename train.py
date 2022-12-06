@@ -14,6 +14,8 @@ import model
 import torch.optim as optim  #最適化アルゴリズムのパッケージ
 from torch.autograd import Variable # 任意のスカラー値関数の自動微分を実装するクラスと関数
 from tqdm import tqdm
+from loss import batch_NN_loss, batch_EMD_loss
+
 
 
 class train:
@@ -91,6 +93,8 @@ class train:
         Raises:
             FileNotFoundError: パラメータファイルが見つからない場合に発生
         """
+        print("\nload_dataset...", end=" ")
+
         train_models = 'data/splits/'+'train_models.json'
         val_models = 'data/splits/'+'val_models.json'
 
@@ -106,6 +110,7 @@ class train:
         with open(val_models, 'r') as f:
             val_models_dict = json.load(f)
 
+        # データパス
         data_dir_imgs = 'data/shapenet/ShapeNetRendering'
         data_dir_pcl = 'data/shapenet/ShapeNet_pointclouds/'
 
@@ -116,15 +121,25 @@ class train:
         if not os.path.exists(data_dir_pcl):
             raise FileNotFoundError("No file '%s'" % data_dir_pcl)
 
+        # GetShapenetDatasetクラスのインスタンス化
         self.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__cats, self.__num_points)
+        
+        # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__dataloader = torch.utils.data.DataLoader(self.__dataset, batch_size=self.__batchsize,
                                                 shuffle=True, num_workers=int(self.__workers))
 
+        # GetShapenetDatasetクラスのインスタンス化
         self.__test_dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, val_models_dict, self.__cats, self.__num_points)
+        
+        # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__testdataloader = torch.utils.data.DataLoader(self.__test_dataset, batch_size=self.__batchsize,
                                                 shuffle=True, num_workers=int(self.__workers))
+        print("完了\n")
 
     def train(self):
+        """機械学習を行う関数．"""
+        print("学習を開始")
+        # 出力先フォルダの作成
         try:
             os.makedirs(self.__outfolder)
         except OSError:
@@ -137,11 +152,14 @@ class train:
         gen = model.generator(num_points=self.__num_points)
 
         if not self.__modelG == '':
+            print("例外")
             with open(self.__modelG, "rb") as f:
                 gen.load_state_dict(torch.load(f))
 
         # GPU接続?
+        print("gpuに接続...")
         gen.cuda()
+        print("完了")
 
         # 最適化アルゴリズム
         # optimizerG = optim.RMSprop(gen.parameters(), lr = self.__lr)
@@ -151,72 +169,66 @@ class train:
         num_batch = len(self.__dataset)/self.__batchsize
 
         # 学習
-        for epoch in range(self.__nepoch+1):
+        print("学習開始")
+        # for epoch in range(self.__nepoch+1):
+        for epoch in tqdm(range(self.__nepoch+1)):
+        # for epoch in range(2):
             data_iter = iter(self.__dataloader)
             i = 0
-            # """
             while i < len(self.__dataloader):
+                print("i : ",i)
 
-                if i >= len(self.__dataloader):
+                try:
+                    data = data_iter.next()
+                except StopIteration:
                     break
-
-                data = data_iter.next()
+                
                 i += 1
-
+                print("1")
                 images, points = data
 
+                # 勾配を計算
                 points = Variable(points.float())
                 points = points.cuda()
                 images = Variable(images.float())
                 images = images.cuda()
+                print("2")
 
                 optimizerG.zero_grad()
+                print("3")
 
                 fake, _, _, _ = gen(images)
                 fake = fake.transpose(2, 1)
+                print("4")
 
                 lossG1 = batch_NN_loss(points, fake)
                 lossG2 = batch_EMD_loss(points, fake)
+                print("5")
 
                 lossG = lossG1 + lossG2
+                print("6")
 
                 lossG.backward()
                 optimizerG.step()
+                print("7")
 
                 if i % 100 == 0:
                     print('[%d: %d/%d] train lossG: %f' %(epoch, i, num_batch, lossG.item()))
+                print("8")
 
             if epoch % 20 == 0 and epoch != 0:
-                print("02")
                 self.__lr = self.__lr * 0.5
                 for param_group in optimizerG.param_groups:
                     param_group['lr'] = self.__lr
                 print('lr decay:', self.__lr)
 
             if epoch % 50 == 0:
-                print("03")
-                torch.save(gen.state_dict(), '%s/modelG_%d.pth' % (opt.outf, epoch))
+                torch.save(gen.state_dict(), '%s/modelG_%d.pth' % (self.__outf, epoch))
             # """
+        print("学習終了")
             
 if __name__ == "__main__":
     train_param_file = "train_param.json"
     train = train(train_param_file)
     train.train()
-
-    """
-    # 環境変数の宣言
-    os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
-
-    # pytorchのprintオプションの設定
-    # 全て表示させるように設定
-    torch.set_printoptions(profile='full')
-
-    # 無名関数 ※ lamba 引数: 返り値
-    blue = lambda x:'\033[94m' + x + '\033[0m'
-
-    # シード値の
-    opt.manualSeed = random.randint(1, 10000) # fix seed
-    print("Random Seed: ", opt.manualSeed)
-    # """
-
     print("終了")

@@ -1,5 +1,5 @@
 {    
-    "batchsize" : 32,
+    "batchsize" : 16,
     "workers"   : 0,
     "nepoch"    : 50,
     "cats"      : "02691156",

@@ -10,6 +10,7 @@ import torch
 import numpy as np
 import cv2
 import os
+from tqdm import tqdm
 
 NUM_VIEWS = 24
 images = []
@@ -33,8 +34,8 @@ class GetShapenetDataset(data.Dataset):
                 self.modelnames.append(filename)
 
     def __getitem__(self, index):
-        img_path = self.data_dir_imgs + self.modelnames[index] + '/rendering/' + (str(int(index % NUM_VIEWS)).zfill(2) + '.png')
-        print(img_path)
+        img_path = os.path.join(self.data_dir_imgs, self.modelnames[index], "rendering", (str(int(index % NUM_VIEWS)).zfill(2) + '.png'))
+        # print(img_path)
         image = cv2.imread(img_path)[4:-5, 4:-5, :3]
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = np.transpose(image, (2, 0, 1))
