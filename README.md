@@ -1,6 +1,10 @@
 # 研究テーマ「単一画像から３Dモデルを再構築する」  
 宮崎大学大学院　令和4,5年度  
 
+## 先行研究
+3D-LMNet<br>
+https://github.com/val-iisc/3d-lmnet<br>
+
 ## 環境
 Ubuntu     : 20.04.5<br>
 GPU        : NVIDIA GeForce RTX 3060 Ti<br>
