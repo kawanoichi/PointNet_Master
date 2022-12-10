@@ -6,13 +6,14 @@
 https://github.com/val-iisc/3d-lmnet<br>
 
 ## 環境
+[環境構築の手順](https://github.com/kawanoichi/PointNet_Master/issues/5)
 Ubuntu     : 20.04.5<br>
 GPU        : NVIDIA GeForce RTX 3060 Ti<br>
-cuda       : 11.7<br>
-python     : 3.6.13<br>
-numpy      : 1.19.5<br>
+cuda       : 11.8<br>
+python     : 3.7.15<br>
+numpy      : 1.19.2<br>
+pytorch    : 1.3.1<br>
 tensorflow : 1.13.1<br>
-pytorch    : 1.0.1<br>
 
 ## データセット
 ### ShapeNet
