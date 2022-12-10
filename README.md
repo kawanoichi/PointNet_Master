@@ -6,7 +6,7 @@
 https://github.com/val-iisc/3d-lmnet<br>
 
 ## 環境
-[環境構築の手順](https://github.com/kawanoichi/PointNet_Master/issues/5)
+[環境構築の手順](https://github.com/kawanoichi/PointNet_Master/issues/5)<br>
 Ubuntu     : 20.04.5<br>
 GPU        : NVIDIA GeForce RTX 3060 Ti<br>
 cuda       : 11.8<br>
