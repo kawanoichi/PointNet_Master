@@ -52,9 +52,16 @@ class nn_distance():
         Returns:
             data: 除外作業を行ったデータ
         """
+        # 同じ座標
+        data = self.__data2[np.where((self.__data2[:,0] != coordinate[0]) 
+                                        & (self.__data2[:,1] != coordinate[1])
+                                        & (self.__data2[:,2] != coordinate[2]))]
+        if data is None:
+            return None
+
         # x座標
-        data = self.__data2[np.where((self.__data2[:,0] - self.__search_range < coordinate[0]) 
-                                & (coordinate[0] < self.__data2[:,0] + self.__search_range))]
+        data = data[np.where((data[:,0] - self.__search_range < coordinate[0]) 
+                                & (coordinate[0] < data[:,0] + self.__search_range))]
         if data is None:
             return None
         # y座標
@@ -128,10 +135,13 @@ class nn_distance():
         return self.__nn_dist_min
 
 if __name__ == "__main__":
-    base_path = 'data/shapenet/'
-    file_path = '02691156/1a04e3eab45ca15dd86060f189eb133'
-    point_path = base_path + 'ShapeNet_pointclouds/' + file_path + '/pointcloud_2048.npy'
-    point_data = np.load(point_path)
+    # base_path = 'data/shapenet/'
+    # file_path = '02691156/1a04e3eab45ca15dd86060f189eb133'
+    # point_path = base_path + 'ShapeNet_pointclouds/' + file_path + '/pointcloud_2048.npy'
+    # point_data = np.load(point_path)
+    
+    coord_file = "predict_points/e50_p_1024_airplane_08.pngpng.npy"
+    point_data = np.load(coord_file)
     point_data2 = point_data.copy()
 
     nn = nn_distance(point_data, point_data2)
