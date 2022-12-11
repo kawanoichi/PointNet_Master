@@ -3,7 +3,7 @@
 修論「単一画像から3Dモデル生成」の機械学習を行うファイル
 @author kawanoichi
 実行コマンド
-$ bash scripts/train.sh
+$ python3 train.py
 """
 import json
 import os
@@ -170,21 +170,17 @@ class train:
 
         # 学習
         print("学習開始")
-        # for epoch in range(self.__nepoch+1):
-        for epoch in tqdm(range(self.__nepoch+1)):
-        # for epoch in range(2):
+        for epoch in range(self.__nepoch+1):
             data_iter = iter(self.__dataloader)
             i = 0
             while i < len(self.__dataloader):
-                print("i : ",i)
 
                 try:
-                    data = data_iter.next()
+                    data = next(data_iter)
                 except StopIteration:
                     break
                 
                 i += 1
-                print("1")
                 images, points = data
 
                 # 勾配を計算
@@ -192,29 +188,22 @@ class train:
                 points = points.cuda()
                 images = Variable(images.float())
                 images = images.cuda()
-                print("2")
 
                 optimizerG.zero_grad()
-                print("3")
 
                 fake, _, _, _ = gen(images)
                 fake = fake.transpose(2, 1)
-                print("4")
 
                 lossG1 = batch_NN_loss(points, fake)
                 lossG2 = batch_EMD_loss(points, fake)
-                print("5")
 
                 lossG = lossG1 + lossG2
-                print("6")
 
                 lossG.backward()
                 optimizerG.step()
-                print("7")
 
                 if i % 100 == 0:
                     print('[%d: %d/%d] train lossG: %f' %(epoch, i, num_batch, lossG.item()))
-                print("8")
 
             if epoch % 20 == 0 and epoch != 0:
                 self.__lr = self.__lr * 0.5
@@ -223,8 +212,8 @@ class train:
                 print('lr decay:', self.__lr)
 
             if epoch % 50 == 0:
-                torch.save(gen.state_dict(), '%s/modelG_%d.pth' % (self.__outf, epoch))
-            # """
+                torch.save(gen.state_dict(), '%s/modelG_%d.pth' % (self.__outfolder, epoch))
+
         print("学習終了")
             
 if __name__ == "__main__":
