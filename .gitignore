@@ -1,5 +1,9 @@
+# パイキャッシュ
+__pycache__/
 # データセット
-data/*
+data/
 # 画像データ
 *png
 *jpg
+# 学習済みデータ
+out_model/
