@@ -1,0 +1,32 @@
+{    
+    "base_path"    : "./data/shapenet/",
+    "outfolder"    : "learned_model",
+    "learned_model": "modelG_50.pth",
+    "nepoch"       : 50,
+    "num_points"   : 1024,
+    "category_id"  : "02691156",
+    "object_id"    : "1a04e3eab45ca15dd86060f189eb133",
+    "image_name"   : "08.png",
+
+    "# 予測座標を保存するpath": "None",
+    "save_folder"  : "predict_points",
+    "save_path"    : "epoch50_point1024_08png",
+
+
+
+
+    "02691156" : "airplane",
+    "02828884" : "bench",
+    "02933112" : "cabinet",
+    "02958343" : "car",
+    "03001627" : "chair",
+    "03636649" : "lamp",
+    "03211117" : "monitor",
+    "04090263" : "rifle",
+    "04256520" : "sofa",
+    "03691459" : "speaker",
+    "04379243" : "table",
+    "04401088" : "telephone",
+    "04530566" : "vessel"
+
+}    

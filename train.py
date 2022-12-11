@@ -17,8 +17,7 @@ from tqdm import tqdm
 from loss import batch_NN_loss, batch_EMD_loss
 
 
-
-class train:
+class Train:
     """機械学習を行うクラス"""
     def __init__(self, train_param_file):
         self.__train_param_file = train_param_file
@@ -53,10 +52,10 @@ class train:
             raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
         self.__nepoch = train_param[key]
 
-        key = "cats"
+        key = "category_id"
         if key not in train_param:
             raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
-        self.__cats = train_param[key]
+        self.__category_id = train_param[key]
 
         key = "num_points"
         if key not in train_param:
@@ -78,14 +77,20 @@ class train:
             raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
         self.__lr = train_param[key]
 
+        key = self.__category_id
+        if key not in train_param:
+            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+        self.__category = train_param[key]
+
         print("batchsize  :", self.__batchsize)
         print("workers    :", self.__workers)
         print("nepoch     :", self.__nepoch)
-        print("cats       :", self.__cats)
+        print("category_id:", self.__category_id)
         print("num_points :", self.__num_points)
         print("outfolder  :", self.__outfolder)
         print("modelG     :", self.__modelG)
         print("lr         :", self.__lr)
+        print("category   :", self.__category)
 
 
     def load_dataset(self)->None:
@@ -122,14 +127,14 @@ class train:
             raise FileNotFoundError("No file '%s'" % data_dir_pcl)
 
         # GetShapenetDatasetクラスのインスタンス化
-        self.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__cats, self.__num_points)
+        self.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
         
         # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__dataloader = torch.utils.data.DataLoader(self.__dataset, batch_size=self.__batchsize,
                                                 shuffle=True, num_workers=int(self.__workers))
 
         # GetShapenetDatasetクラスのインスタンス化
-        self.__test_dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, val_models_dict, self.__cats, self.__num_points)
+        self.__test_dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, val_models_dict, self.__category_id, self.__num_points)
         
         # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__testdataloader = torch.utils.data.DataLoader(self.__test_dataset, batch_size=self.__batchsize,
@@ -212,12 +217,12 @@ class train:
                 print('lr decay:', self.__lr)
 
             if epoch % 50 == 0:
-                torch.save(gen.state_dict(), '%s/modelG_%d.pth' % (self.__outfolder, epoch))
+                torch.save(gen.state_dict(), '%s/%s-%s/modelG_%d.pth' % (self.__outfolder, self.__category, self.__num_points, epoch))
 
         print("学習終了")
             
 if __name__ == "__main__":
     train_param_file = "train_param.json"
-    train = train(train_param_file)
+    train = Train(train_param_file)
     train.train()
     print("終了")
