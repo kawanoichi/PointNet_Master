@@ -1,9 +1,15 @@
 # パイキャッシュ
 __pycache__/
+
 # データセット
 data/
+
 # 画像データ
 *png
 *jpg
+
 # 学習済みデータ
-out_model/
+learned_model/
+
+# 画像からの予測点群座標
+predict_points/
