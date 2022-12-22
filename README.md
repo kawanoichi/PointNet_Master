@@ -2,8 +2,8 @@
 宮崎大学大学院　令和4,5年度  
 
 ## 先行研究
-3D-LMNet<br>
-https://github.com/val-iisc/3d-lmnet<br>
+3D-ReConstnet<br>
+https://github.com/yonghanzhang94/A-Single-View-3D-Object-Point-Cloud-Reconstruction<br>
 
 ## 環境
 [環境構築の手順](https://github.com/kawanoichi/PointNet_Master/issues/5)<br>
