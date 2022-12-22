@@ -15,7 +15,7 @@ import torch.optim as optim  #最適化アルゴリズムのパッケージ
 from torch.autograd import Variable # 任意のスカラー値関数の自動微分を実装するクラスと関数
 from tqdm import tqdm
 from loss import batch_NN_loss, batch_EMD_loss
-
+import time
 
 class Train:
     """機械学習を行うクラス"""
@@ -145,8 +145,10 @@ class Train:
         """機械学習を行う関数．"""
         print("学習を開始")
         # 出力先フォルダの作成
+        save_folder = os.path.join(self.__outfolder, self.__category+"-"+str(self.__num_points))
+        print("save_folder",save_folder)
         try:
-            os.makedirs(self.__outfolder)
+            os.makedirs(save_folder)
         except OSError:
             pass
 
@@ -175,7 +177,7 @@ class Train:
 
         # 学習
         print("学習開始")
-        for epoch in range(self.__nepoch+1):
+        for epoch in tqdm(range(self.__nepoch+1)):
             data_iter = iter(self.__dataloader)
             i = 0
             while i < len(self.__dataloader):
@@ -207,14 +209,14 @@ class Train:
                 lossG.backward()
                 optimizerG.step()
 
-                if i % 100 == 0:
-                    print('[%d: %d/%d] train lossG: %f' %(epoch, i, num_batch, lossG.item()))
+                # if i % 100 == 0:
+                #     print('[%d: %d/%d] train lossG: %f' %(epoch, i, num_batch, lossG.item()))
 
             if epoch % 20 == 0 and epoch != 0:
                 self.__lr = self.__lr * 0.5
                 for param_group in optimizerG.param_groups:
                     param_group['lr'] = self.__lr
-                print('lr decay:', self.__lr)
+                # print('lr decay:', self.__lr)
 
             if epoch % 50 == 0:
                 torch.save(gen.state_dict(), '%s/%s-%s/modelG_%d.pth' % (self.__outfolder, self.__category, self.__num_points, epoch))
@@ -222,7 +224,11 @@ class Train:
         print("学習終了")
             
 if __name__ == "__main__":
+    start_time = time.time()
     train_param_file = "train_param.json"
     train = Train(train_param_file)
     train.train()
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(elapsed_time)
     print("終了")

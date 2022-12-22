@@ -1,9 +1,9 @@
 {    
-    "batchsize"  : 16,
+    "batchsize"  : 32,
     "workers"    : 0,
     "nepoch"     : 50,
     "category_id": "02691156",
-    "num_points" : 1024,
+    "num_points" : 2048,
     "outfolder"  : "learned_model",
     "modelG"     : "",
     "lr"         : 0.00005,
