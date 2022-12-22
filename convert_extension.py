@@ -6,6 +6,7 @@ import os
 
 def make_ply(coodinate_file, save_ply):
     # パラメータファイルが存在するかの確認
+    # [参考] https://programming-surgeon.com/imageanalysis/ply-python/
     if not os.path.isfile(save_ply):
         raise FileNotFoundError("No file '%s'" % save_ply)
 
