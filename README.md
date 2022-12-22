@@ -9,10 +9,10 @@ https://github.com/yonghanzhang94/A-Single-View-3D-Object-Point-Cloud-Reconstruc
 [環境構築の手順](https://github.com/kawanoichi/PointNet_Master/issues/5)<br>
 Ubuntu     : 20.04.5<br>
 GPU        : NVIDIA GeForce RTX 3060 Ti<br>
-cuda       : 11.8<br>
+cuda       : 11.7<br>
 python     : 3.7.15<br>
 numpy      : 1.19.2<br>
-pytorch    : 1.3.1<br>
+pytorch    : 1.13.1<br>
 tensorflow : 1.13.1<br>
 
 生成した点群の表示はmatplotlibだと重いため、meshlabを使用する。<br>
