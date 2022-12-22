@@ -8,8 +8,19 @@ data/
 *png
 *jpg
 
+# 座標データ
+*npy
+*asc
+*ply
+
 # 学習済みデータ
 learned_model/
 
 # 画像からの予測点群座標
 predict_points/
+
+# gt座標
+gt_points/
+
+# 実験用ファイル
+test.py

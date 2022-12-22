@@ -6,11 +6,11 @@
     "num_points"   : 1024,
     "category_id"  : "02691156",
     "object_id"    : "1a04e3eab45ca15dd86060f189eb133",
-    "image_name"   : "08.png",
+    "image_name"   : "15.png",
 
     "# 予測座標を保存するpath": "None",
-    "save_folder"  : "predict_points",
-    "save_path"    : "epoch50_point1024_08png",
+    "pre_save_folder" : "predict_points",
+    "gt_save_folder"  : "gt_points",
 
 
 

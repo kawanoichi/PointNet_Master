@@ -82,36 +82,42 @@ class Predict_Point:
             raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
         self.__category = predict_param[key]
 
-        key = "save_folder"
+        key = "pre_save_folder"
         if key not in predict_param:
             raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
-        self.__save_folder = predict_param[key]
+        self.__pre_save_folder = predict_param[key]
+
+        key = "gt_save_folder"
+        if key not in predict_param:
+            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+        self.__gt_save_folder = predict_param[key]
 
         print("##PARAMETER","-"*39)
-        print("*base_path    :", self.__base_path)    
-        print("*outfolder    :", self.__outfolder)
-        print("*learned_model:", self.__learned_model)
-        print("*nepoch       :", self.__nepoch)
-        print("*num_points   :", self.__num_points)
-        print("*category_id  :", self.__category_id)
-        print("*object_id    :", self.__object_id)
-        print("*image_name   :", self.__image_name)
-        print("*category     :", self.__category)
-        print("*save_folder  :", self.__save_folder)
+        print("*base_path       :", self.__base_path)    
+        print("*outfolder       :", self.__outfolder)
+        print("*learned_model   :", self.__learned_model)
+        print("*nepoch          :", self.__nepoch)
+        print("*num_points      :", self.__num_points)
+        print("*category_id     :", self.__category_id)
+        print("*object_id       :", self.__object_id)
+        print("*image_name      :", self.__image_name)
+        print("*category        :", self.__category)
+        print("*pre_save_folder :", self.__pre_save_folder)
+        print("*gt_save_folder  :", self.__gt_save_folder)
         print("-"*50)
 
     def predict(self, show:bool = False):
         """学習済みモデルを使用して画像から点群を生成する."""
         # 入力画像path
         file_path = os.path.join(self.__category_id, self.__object_id)
-        img_path = os.path.join(self.__base_path, 
+        read_img_path = os.path.join(self.__base_path, 
                                     "ShapeNetRendering", 
                                     file_path, 
                                     "rendering", 
                                     self.__image_name)
         
         # グランドトゥルースpath
-        gt_path = os.path.join(self.__base_path, 
+        read_gt_path = os.path.join(self.__base_path, 
                                 "ShapeNet_pointclouds", 
                                 file_path, 
                                 "pointcloud_"+str(self.__num_points)+".npy")
@@ -123,19 +129,29 @@ class Predict_Point:
 
         # 予測点群の保存path
         try:
-            os.makedirs(self.__save_folder)
+            os.makedirs(self.__pre_save_folder)
         except OSError:
             pass
-        save_name = "e%d_p_%d_%s_%spng.npy"%(self.__nepoch, self.__num_points, self.__category, self.__image_name)
-        save_path = os.path.join(self.__save_folder, save_name)
+        save_name = "e%d_p%d_%s_%spng.npy"%(self.__nepoch, self.__num_points, self.__category, self.__image_name[:-4])
+        pre_save_path = os.path.join(self.__pre_save_folder, save_name)
 
-        # グラウンドトゥルース
-        gt_path = (np.load(gt_path)).astype('float32')
+        # gtの保存path
+        try:
+            os.makedirs(self.__gt_save_folder)
+        except OSError:
+            pass
+        save_name = "pointcloud_%d_%s.asc"%(self.__num_points, self.__category)
+        gt_save_path = os.path.join(self.__gt_save_folder, save_name)
+        print("gt_save_path", gt_save_path)
 
+        # gtの保存
+        gt = (np.load(read_gt_path)).astype('float32')
+        np.savetxt(gt_save_path, gt)
+        # """
         cudnn.benchmark = True
 
         # 画像読み込み(128, 128, 3)
-        image = cv2.imread(img_path)[4:-5, 4:-5, :3]
+        image = cv2.imread(read_img_path)[4:-5, 4:-5, :3]
 
         # BGRからRGBへの変換
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -175,14 +191,16 @@ class Predict_Point:
         predict_points = np.transpose(points, (1, 0))
 
         # 予測座標の保存
-        np.save(save_path, predict_points)
+        np.save(pre_save_path, predict_points)
+        np.savetxt(pre_save_path[:-3]+"asc", predict_points)
 
         # showがTrueの場合、予測点群を表示する
         if show:
-            Predict_Point.show_points(predict_points, gt_path)    
+            Predict_Point.show_points(predict_points)    
+        # """
 
     @staticmethod
-    def show_points(predict_points, gt_path=None):
+    def show_points(predict_points, read_gt_path=None):
         """生成した点群オブジェクトを表示する."""
         print("type(predict_points)", type(predict_points))
         fig = plt.figure()
@@ -192,20 +210,21 @@ class Predict_Point:
         ax.set_ylim(-0.5, 0.5)
         ax.set_zlim(-0.5, 0.5)
         for i in range(len(predict_points)):
-            ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c="#00008B", depthshade=True)
+            ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c = "blue", depthshade=True, s=1)
+            # ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c="#00008B", depthshade=True, s=10)
         ax.axis("off")
         ax.view_init(azim=90, elev=-160)
         plt.show()
 
-        if not gt_path is None:
+        if not read_gt_path is None:
             fig = plt.figure()
             fig.suptitle("GT")
             ax2 = fig.gca(projection="3d")
             ax2.set_xlim(-0.5, 0.5)
             ax2.set_ylim(-0.5, 0.5)
             ax2.set_zlim(-0.5, 0.5)
-            for i in range(len(gt_path)):
-                ax2.scatter(gt_path[i, 1], gt_path[i, 2], gt_path[i, 0], c="#00008B", depthshade=True)
+            for i in range(len(read_gt_path)):
+                ax2.scatter(read_gt_path[i, 1], read_gt_path[i, 2], read_gt_path[i, 0], c="#00008B", depthshade=True)
             ax2.axis("off")
             ax2.view_init(azim=90, elev=-160)
             plt.show()
@@ -233,12 +252,6 @@ if __name__ == "__main__":
     pp = Predict_Point(predict_param_file)
 
     # 点群予測関数の実行
-    pp.predict(show = True)
-
-    # 点群path
-    coord_file = "predict_points/e50_p_1024_airplane_08.pngpng.npy"
-
-    # 点群表示
-    # pp.load_points(coord_file)
+    pp.predict(show = None)
 
     print("終了")
