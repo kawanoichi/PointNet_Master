@@ -16,11 +16,12 @@ pytorch    : 1.3.1<br>
 tensorflow : 1.13.1<br>
 
 生成した点群の表示はmatplotlibだと重いため、meshlabを使用する。<br>
-インストール<br>
+
+### インストール<br>
 ```
 sudo apt -y install meshlab
 ```
-起動<br>
+### 起動<br>
 ```
 meshlab
 ```
