@@ -15,7 +15,7 @@ import torch.optim as optim  #最適化アルゴリズムのパッケージ
 from torch.autograd import Variable # 任意のスカラー値関数の自動微分を実装するクラスと関数
 from tqdm import tqdm
 from loss import batch_NN_loss, batch_EMD_loss
-import time
+import datetime
 
 class Train:
     """機械学習を行うクラス"""
@@ -126,8 +126,8 @@ class Train:
         if not os.path.exists(data_dir_pcl):
             raise FileNotFoundError("No file '%s'" % data_dir_pcl)
 
-        # GetShapenetDatasetクラスのインスタンス化
-        self.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
+        # Ge
+import numpy as np.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
         
         # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__dataloader = torch.utils.data.DataLoader(self.__dataset, batch_size=self.__batchsize,
@@ -224,11 +224,11 @@ class Train:
         print("学習終了")
             
 if __name__ == "__main__":
-    start_time = time.time()
+    start_time = datetime.datetime.now()
     train_param_file = "train_param.json"
     train = Train(train_param_file)
     train.train()
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(elapsed_time)
+    end_time = datetime.datetime.now()
+    print("学習開始時刻: ", start_time)
+    print("学習終了時刻: ", end_time)
     print("終了")
