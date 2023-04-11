@@ -12,6 +12,7 @@ $ python3 mesh.py
 import numpy as np
 import open3d as o3d
 import os
+import argparse
 
 def make_surface(ply_file):
     if not os.path.isfile(ply_file):
@@ -54,8 +55,21 @@ def make_surface(ply_file):
     o3d.visualization.draw_geometries([recMeshBPA])
 
 if __name__ == "__main__":    
-    # ply_file =('point_cloud.ply')
-    ply_file =('predict_points/e50_p2048_airplane_01png.ply')
-    make_surface(ply_file)
+    # ply_file =('predict_points/e50_p2048_airplane_01png.ply')
 
     print("終了")
+
+    parser = argparse.ArgumentParser(description="使用例\n"
+                                                 " 指定した.plyファイルのメッシュ化を行い視覚化する\n"
+                                                 " $ python mesh.py -mesh point_cloud.ply\n",
+                                     formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument("-m", "--mesh", type=str, help="メッシュ化を行う")
+    args = parser.parse_args()
+
+    # 指定していないときは'point_cloud.ply'のメッシュ化を行う
+    if args.mesh is None:
+        make_surface('point_cloud.ply')
+        exit(0)
+
+    make_surface(args.mesh)
