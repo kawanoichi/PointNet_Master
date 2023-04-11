@@ -21,9 +21,18 @@ tensorflow : 1.13.1<br>
 ```
 sudo apt -y install meshlab
 ```
-### 起動<br>
+## 実行<br>
+
+### 点群の視覚化
 ```
 meshlab
+```
+
+
+### メッシュ化を行う<br>
+```mesh.py```ファイルを使用して点群のメッシュ化を行う。
+```
+python3 mesh.py -m plyファイル名
 ```
 
 
