@@ -126,8 +126,8 @@ class Train:
         if not os.path.exists(data_dir_pcl):
             raise FileNotFoundError("No file '%s'" % data_dir_pcl)
 
-        # Ge
-import numpy as np.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
+        # GetShapenetDatasetクラスのインスタンス化
+        self.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
         
         # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__dataloader = torch.utils.data.DataLoader(self.__dataset, batch_size=self.__batchsize,
