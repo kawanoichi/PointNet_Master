@@ -10,7 +10,7 @@ def make_ply(coodinate_file, save_ply):
     if not os.path.isfile(save_ply):
         raise FileNotFoundError("No file '%s'" % save_ply)
 
-    """npファイルをplyファイルに変換する."""
+    """npyファイルをplyファイルに変換する."""
     point_data = np.load(coodinate_file)
     vertices, vertex_indices = np.unique(point_data, return_inverse=True, axis=0)
     # 1024
