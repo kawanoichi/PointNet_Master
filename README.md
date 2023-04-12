@@ -24,6 +24,7 @@ sudo apt -y install meshlab
 ## 実行<br>
 
 ### 点群の視覚化
+meshlabの起動コマンド
 ```
 meshlab
 ```
