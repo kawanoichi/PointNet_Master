@@ -23,18 +23,39 @@ sudo apt -y install meshlab
 ```
 ## 実行<br>
 
-### 点群の視覚化
+### オブジェクト(点群,メッシュ化オブジェクト)の視覚化のできるソフトウェア
 meshlabの起動コマンド
 ```
 meshlab
 ```
 
+### 学習からメッシュ化までの流れ
+## 学習
+```train.py```ファイルを使用して画像から点群を予測し、学習済みモデルを作成する。
+```
+python3 train.py
+```
+学習済みモデルは```learned_model```のフォルダに作成する。
 
-### メッシュ化を行う<br>
-```mesh.py```ファイルを使用して点群のメッシュ化を行う。
+## 予測
+```predict_point_shapnet.py```ファイルと学習済みモデルを使用して、画像から点群を予測する。
+```
+python3 predict_point_shapenet.py
+```
+出力はnpyファイル。
+
+## 表面を生成する
+```convert_extension.py```ファイルを使用して予測したnpyファイルをplyファイルに変換する。
+```
+python3 convert_extension.py
+```
+
+```mesh.py```ファイルを使用して点群のメッシュ化(面の生成)を行う。
 ```
 python3 mesh.py -m plyファイル名
 ```
+
+
 
 
 ## データセット
