@@ -29,22 +29,22 @@ meshlabの起動コマンド
 meshlab
 ```
 
-### 学習からメッシュ化までの流れ
-## 学習
+## 学習からメッシュ化までの流れ
+### 学習
 ```train.py```ファイルを使用して画像から点群を予測し、学習済みモデルを作成する。
 ```
 python3 train.py
 ```
 学習済みモデルは```learned_model```のフォルダに作成する。
 
-## 予測
+### 点群の予測
 ```predict_point_shapnet.py```ファイルと学習済みモデルを使用して、画像から点群を予測する。
 ```
 python3 predict_point_shapenet.py
 ```
 出力はnpyファイル。
 
-## 表面を生成する
+### 表面を生成する
 ```convert_extension.py```ファイルを使用して予測したnpyファイルをplyファイルに変換する。
 ```
 python3 convert_extension.py
