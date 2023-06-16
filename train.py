@@ -18,7 +18,7 @@ from loss import batch_NN_loss, batch_EMD_loss
 import datetime
 
 class Train:
-    """機械学習を行うクラス"""
+    """機械学習を行うクラス."""
     def __init__(self, train_param_file):
         self.__train_param_file = train_param_file
         self.load_param() #学習パラメータの読み込み
@@ -225,10 +225,13 @@ class Train:
             
 if __name__ == "__main__":
     start_time = datetime.datetime.now()
+
     train_param_file = "train_param.json"
     train = Train(train_param_file)
     train.train()
+    
     end_time = datetime.datetime.now()
+    
     print("学習開始時刻: ", start_time)
     print("学習終了時刻: ", end_time)
     print("終了")
