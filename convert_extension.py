@@ -4,7 +4,7 @@ python3 convert_extension.py
 import numpy as np
 import os
 
-def make_ply(coodinate_file, save_ply):
+def make_ply(coodinate_file, save_ply, point_num):
     # パラメータファイルが存在するかの確認
     # [参考] https://programming-surgeon.com/imageanalysis/ply-python/
     if not os.path.isfile(save_ply):
@@ -13,12 +13,12 @@ def make_ply(coodinate_file, save_ply):
     """npyファイルをplyファイルに変換する."""
     point_data = np.load(coodinate_file)
     vertices, vertex_indices = np.unique(point_data, return_inverse=True, axis=0)
-    # 1024
-    # index_triangle = vertex_indices[1:].reshape([-1, 3])
-    # 2048
-    index_triangle = vertex_indices[2:].reshape([-1, 3])
-    # print(index_triangle) 
-
+    
+    if point_num == 1024:
+        index_triangle = vertex_indices[1:].reshape([-1, 3])
+    
+    if point_num == 2048:
+        index_triangle = vertex_indices[2:].reshape([-1, 3])
 
     """Extract point and face data from .stl file"""
 
@@ -61,10 +61,12 @@ def make_ply(coodinate_file, save_ply):
 
 
 if __name__ == "__main__":    
-    # coodinate_file = "predict_points/e50_p1024_lamp_01png.npy"
-    # coodinate_file = "predict_points/e50_p1024_airplane_01png.npy"
-    coodinate_file = "predict_points/e50_p2048_airplane_01png.npy"
+    coodinate_file = "predict_points/e50_p2048_airplane_15png.npy"
+    
     save_file = coodinate_file[:-3]+"ply"
-    make_ply(coodinate_file, save_file)
+    
+    point_num = 2048
+    
+    make_ply(coodinate_file, save_file, point_num)
 
     print("終了")
