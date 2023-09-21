@@ -2,7 +2,9 @@
 __pycache__/
 
 # データセット
-data/
+data/*
+!./data/splits/train_models.json
+!./data/splits/val_models.json
 
 # 画像データ
 *png
@@ -12,6 +14,7 @@ data/
 *npy
 *asc
 *ply
+!predict_points/e50_p2048_airplane_15png.ply
 
 # 学習済みデータ
 learned_model/

@@ -6,7 +6,6 @@ file_path = "point_cloud"
 # file_name = "Experiment_ply/regular_tetrahedron.ply"
 print("file_path = ", file_path)
 ply_file = o3d.io.read_point_cloud(file_path)
-# """
 
 # 頂点座標の取得
 vertices = np.asarray(ply_file.points)
@@ -25,4 +24,3 @@ mesh.triangles = o3d.utility.Vector3iVector(triangles)
 mesh.compute_vertex_normals()
 
 o3d.visualization.draw_geometries([mesh])
-# """

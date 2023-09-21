@@ -3,7 +3,7 @@
     "outfolder"    : "learned_model",
     "learned_model": "modelG_50.pth",
     "nepoch"       : 50,
-    "num_points"   : 1024,
+    "num_points"   : 2048,
     "category_id"  : "02691156",
     "object_id"    : "1a04e3eab45ca15dd86060f189eb133",
     "image_name"   : "15.png",

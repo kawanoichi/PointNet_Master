@@ -9,7 +9,7 @@ import json
 import os
 import torch.backends.cudnn as cudnn
 import cv2
-import matplotlib.pylab as plt
+# import matplotlib.pylab as plt
 import numpy as np
 import torch
 from torch.autograd import Variable
@@ -199,48 +199,48 @@ class Predict_Point:
             Predict_Point.show_points(predict_points)    
         # """
 
-    @staticmethod
-    def show_points(predict_points, read_gt_path=None):
-        """生成した点群オブジェクトを表示する."""
-        print("type(predict_points)", type(predict_points))
-        fig = plt.figure()
-        fig.suptitle("PREDICT")
-        ax = fig.gca(projection="3d")
-        ax.set_xlim(-0.5, 0.5)
-        ax.set_ylim(-0.5, 0.5)
-        ax.set_zlim(-0.5, 0.5)
-        for i in range(len(predict_points)):
-            ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c = "blue", depthshade=True, s=1)
-            # ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c="#00008B", depthshade=True, s=10)
-        ax.axis("off")
-        ax.view_init(azim=90, elev=-160)
-        plt.show()
+    # @staticmethod
+    # def show_points(predict_points, read_gt_path=None):
+    #     """生成した点群オブジェクトを表示する."""
+    #     print("type(predict_points)", type(predict_points))
+    #     fig = plt.figure()
+    #     fig.suptitle("PREDICT")
+    #     ax = fig.gca(projection="3d")
+    #     ax.set_xlim(-0.5, 0.5)
+    #     ax.set_ylim(-0.5, 0.5)
+    #     ax.set_zlim(-0.5, 0.5)
+    #     for i in range(len(predict_points)):
+    #         ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c = "blue", depthshade=True, s=1)
+    #         # ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c="#00008B", depthshade=True, s=10)
+    #     ax.axis("off")
+    #     ax.view_init(azim=90, elev=-160)
+    #     plt.show()
 
-        if not read_gt_path is None:
-            fig = plt.figure()
-            fig.suptitle("GT")
-            ax2 = fig.gca(projection="3d")
-            ax2.set_xlim(-0.5, 0.5)
-            ax2.set_ylim(-0.5, 0.5)
-            ax2.set_zlim(-0.5, 0.5)
-            for i in range(len(read_gt_path)):
-                ax2.scatter(read_gt_path[i, 1], read_gt_path[i, 2], read_gt_path[i, 0], c="#00008B", depthshade=True)
-            ax2.axis("off")
-            ax2.view_init(azim=90, elev=-160)
-            plt.show()
+    #     if not read_gt_path is None:
+    #         fig = plt.figure()
+    #         fig.suptitle("GT")
+    #         ax2 = fig.gca(projection="3d")
+    #         ax2.set_xlim(-0.5, 0.5)
+    #         ax2.set_ylim(-0.5, 0.5)
+    #         ax2.set_zlim(-0.5, 0.5)
+    #         for i in range(len(read_gt_path)):
+    #             ax2.scatter(read_gt_path[i, 1], read_gt_path[i, 2], read_gt_path[i, 0], c="#00008B", depthshade=True)
+    #         ax2.axis("off")
+    #         ax2.view_init(azim=90, elev=-160)
+    #         plt.show()
 
-    @staticmethod
-    def load_points(coord_file:str)->None:
-        """保存されて座標から点群を生成し、表示する."""
-        # パラメータファイルが存在するかの確認
-        if not os.path.isfile(coord_file):
-            raise FileNotFoundError("No file '%s'" % coord_file)
+    # @staticmethod
+    # def load_points(coord_file:str)->None:
+    #     """保存されて座標から点群を生成し、表示する."""
+    #     # パラメータファイルが存在するかの確認
+    #     if not os.path.isfile(coord_file):
+    #         raise FileNotFoundError("No file '%s'" % coord_file)
 
-        # 点群座標の読み込み
-        points = np.load(coord_file)
+    #     # 点群座標の読み込み
+    #     points = np.load(coord_file)
 
-        # 点群を表示
-        Predict_Point.show_points(points)
+    #     # 点群を表示
+    #     Predict_Point.show_points(points)
 
 
 
@@ -252,6 +252,6 @@ if __name__ == "__main__":
     pp = Predict_Point(predict_param_file)
 
     # 点群予測関数の実行
-    pp.predict(show = None)
+    pp.predict()
 
     print("終了")

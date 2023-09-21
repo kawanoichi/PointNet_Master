@@ -1,4 +1,4 @@
-"""Open3Dで3D点群をメッシュ（ポリゴン）に変換するプログラム.
+"""Open3Dで3D点群をメッシュ(ポリゴン)に変換するプログラム.
 plyファイルからmeshを生成する.
 参考URL
     Open3DとPythonによる実装
@@ -57,7 +57,6 @@ def make_surface(ply_file):
 if __name__ == "__main__":    
     # ply_file =('predict_points/e50_p2048_airplane_01png.ply')
 
-    print("終了")
 
     parser = argparse.ArgumentParser(description="使用例\n"
                                                  " 指定した.plyファイルのメッシュ化を行い視覚化する\n"
@@ -73,3 +72,5 @@ if __name__ == "__main__":
         exit(0)
 
     make_surface(args.mesh)
+
+    print("終了")
