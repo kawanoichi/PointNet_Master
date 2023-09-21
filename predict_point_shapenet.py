@@ -9,7 +9,7 @@ import json
 import os
 import torch.backends.cudnn as cudnn
 import cv2
-import matplotlib.pylab as plt
+# import matplotlib.pylab as plt
 import numpy as np
 import torch
 from torch.autograd import Variable

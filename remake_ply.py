@@ -1,7 +1,6 @@
 """plyファイルのメッシュの再構築を行う.
 
 面の頂点インデックスがバラバラなときに使用する。
-@author kawanoichi
 実行コマンド
 $ python3 remake_ply.py -m point_cloud.ply
 """
