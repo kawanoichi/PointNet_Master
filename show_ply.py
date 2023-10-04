@@ -8,6 +8,7 @@ $ python3 show_ply.py
 import pyvista as pv
 import argparse
 
+
 def show_ply(path):
     # PLYファイルを読み込みます
     mesh = pv.read(path)
@@ -18,8 +19,7 @@ def show_ply(path):
     p.show()
 
 
-
-if __name__ == "__main__":    
+if __name__ == "__main__":
     # ply_file =('predict_points/e50_p2048_airplane_01png.ply')
 
     print("終了")

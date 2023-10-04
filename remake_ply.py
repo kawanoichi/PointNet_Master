@@ -9,6 +9,7 @@ import pyvista as pv
 import numpy as np
 import argparse
 
+
 def remake_ply(path):
     """メッシュの再構築を行う"""
     save_path = "remake_" + path
@@ -43,11 +44,11 @@ def remake_ply(path):
 
     # 新しいメッシュをPLYファイルとして出力します。
     print("save_path : ", save_path)
-    new_mesh.save(save_path) # コアダンプしてしまう。
+    new_mesh.save(save_path)  # コアダンプしてしまう。
     print("4")
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="使用例\n"
                                                  " 指定した.plyファイルのメッシュのメッシュの差構築を行う\n"
                                                  " $ python remake_ply.py -mesh point_cloud.ply\n",

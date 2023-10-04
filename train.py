@@ -11,20 +11,22 @@ from datasets import GetShapenetDataset
 import torch
 import torch.backends.cudnn as cudnn
 import model
-import torch.optim as optim  #最適化アルゴリズムのパッケージ
-from torch.autograd import Variable # 任意のスカラー値関数の自動微分を実装するクラスと関数
+import torch.optim as optim  # 最適化アルゴリズムのパッケージ
+from torch.autograd import Variable  # 任意のスカラー値関数の自動微分を実装するクラスと関数
 from tqdm import tqdm
 from loss import batch_NN_loss, batch_EMD_loss
 import datetime
 
+
 class Train:
     """機械学習を行うクラス."""
+
     def __init__(self, train_param_file):
         self.__train_param_file = train_param_file
-        self.load_param() #学習パラメータの読み込み
-        self.load_dataset() #データセットの読み込み
+        self.load_param()  # 学習パラメータの読み込み
+        self.load_dataset()  # データセットの読み込み
 
-    def load_param(self)->None:
+    def load_param(self) -> None:
         """インスタンス変数としてパラメータファイルを読み込む.
         Raises:
             FileNotFoundError: パラメータファイルが見つからない場合に発生
@@ -39,47 +41,56 @@ class Train:
 
         key = "batchsize"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__batchsize = train_param[key]
 
         key = "workers"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__workers = train_param[key]
 
         key = "nepoch"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__nepoch = train_param[key]
 
         key = "category_id"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__category_id = train_param[key]
 
         key = "num_points"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__num_points = train_param[key]
 
         key = "outfolder"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__outfolder = train_param[key]
 
         key = "modelG"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__modelG = train_param[key]
 
         key = "lr"
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__lr = train_param[key]
 
         key = self.__category_id
         if key not in train_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__train_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__train_param_file))
         self.__category = train_param[key]
 
         print("batchsize  :", self.__batchsize)
@@ -92,8 +103,7 @@ class Train:
         print("lr         :", self.__lr)
         print("category   :", self.__category)
 
-
-    def load_dataset(self)->None:
+    def load_dataset(self) -> None:
         """インスタンス変数としてデータセットを読み込む.
         Raises:
             FileNotFoundError: パラメータファイルが見つからない場合に発生
@@ -105,7 +115,7 @@ class Train:
 
         if not os.path.isfile(train_models):
             raise FileNotFoundError("No file '%s'" % train_models)
-        
+
         with open(train_models, 'r') as f:
             train_models_dict = json.load(f)
 
@@ -127,26 +137,29 @@ class Train:
             raise FileNotFoundError("No file '%s'" % data_dir_pcl)
 
         # GetShapenetDatasetクラスのインスタンス化
-        self.__dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
-        
+        self.__dataset = GetShapenetDataset(
+            data_dir_imgs, data_dir_pcl, train_models_dict, self.__category_id, self.__num_points)
+
         # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__dataloader = torch.utils.data.DataLoader(self.__dataset, batch_size=self.__batchsize,
-                                                shuffle=True, num_workers=int(self.__workers))
+                                                        shuffle=True, num_workers=int(self.__workers))
 
         # GetShapenetDatasetクラスのインスタンス化
-        self.__test_dataset = GetShapenetDataset(data_dir_imgs, data_dir_pcl, val_models_dict, self.__category_id, self.__num_points)
-        
+        self.__test_dataset = GetShapenetDataset(
+            data_dir_imgs, data_dir_pcl, val_models_dict, self.__category_id, self.__num_points)
+
         # 参考URL: https://pytorch.org/docs/stable/data.html
         self.__testdataloader = torch.utils.data.DataLoader(self.__test_dataset, batch_size=self.__batchsize,
-                                                shuffle=True, num_workers=int(self.__workers))
+                                                            shuffle=True, num_workers=int(self.__workers))
         print("完了\n")
 
     def train(self):
         """機械学習を行う関数．"""
         print("学習を開始")
         # 出力先フォルダの作成
-        save_folder = os.path.join(self.__outfolder, self.__category+"-"+str(self.__num_points))
-        print("save_folder",save_folder)
+        save_folder = os.path.join(
+            self.__outfolder, self.__category+"-"+str(self.__num_points))
+        print("save_folder", save_folder)
         try:
             os.makedirs(save_folder)
         except OSError:
@@ -170,7 +183,7 @@ class Train:
 
         # 最適化アルゴリズム
         # optimizerG = optim.RMSprop(gen.parameters(), lr = self.__lr)
-        optimizerG = optim.Adam(gen.parameters(), lr = self.__lr)
+        optimizerG = optim.Adam(gen.parameters(), lr=self.__lr)
 
         # バッチサイズで分けたグループ数
         num_batch = len(self.__dataset)/self.__batchsize
@@ -186,7 +199,7 @@ class Train:
                     data = next(data_iter)
                 except StopIteration:
                     break
-                
+
                 i += 1
                 images, points = data
 
@@ -219,19 +232,21 @@ class Train:
                 # print('lr decay:', self.__lr)
 
             if epoch % 50 == 0:
-                torch.save(gen.state_dict(), '%s/%s-%s/modelG_%d.pth' % (self.__outfolder, self.__category, self.__num_points, epoch))
+                torch.save(gen.state_dict(), '%s/%s-%s/modelG_%d.pth' %
+                           (self.__outfolder, self.__category, self.__num_points, epoch))
 
         print("学習終了")
-            
+
+
 if __name__ == "__main__":
     start_time = datetime.datetime.now()
 
     train_param_file = "train_param.json"
     train = Train(train_param_file)
     train.train()
-    
+
     end_time = datetime.datetime.now()
-    
+
     print("学習開始時刻: ", start_time)
     print("学習終了時刻: ", end_time)
     print("終了")

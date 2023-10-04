@@ -10,6 +10,9 @@ help:
 	@echo pytorchのgpu認識のチェックを行う
 	@echo " $$ make check torch"
 
+format:
+	python -m autopep8 -i *.py
+
 train:
 	python3 train.py
 
@@ -19,8 +22,21 @@ predict:
 convert:
 	python3 convert_extension.py
 
-check_tensor:
+check_gpu:
+	@echo pytorch
+	python3 enviroment_check/check_torch_gpu.py
+	@echo tensorflow
 	python3 enviroment_check/check_tensor_gpu.py
 
-check_torch:
-	python3 enviroment_check/check_torch_gpu.py
+# ソースコード実行
+cube:
+	 python3 create_mesh/create_point_of_cube.py 
+info:
+	 python3 create_mesh/infomation.py 
+mesh:
+	 python3 create_mesh/mesh.py 
+marching:
+	 python3 create_mesh/marching_cube.py
+zikken:
+	 python3 create_mesh/zikken.py
+

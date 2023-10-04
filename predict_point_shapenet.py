@@ -18,13 +18,14 @@ from model import generator
 
 class Predict_Point:
     """画像から3Dオブジェクトを生成するクラス."""
+
     def __init__(self, predict_param_file):
         # パラメータpath
         self.__predict_param_file = predict_param_file
-        #学習パラメータの読み込み
+        # 学習パラメータの読み込み
         self.load_param()
 
-    def load_param(self)->None:
+    def load_param(self) -> None:
         """インスタンス変数としてパラメータファイルを読み込む.
         Raises:
             FileNotFoundError: パラメータファイルが見つからない場合に発生
@@ -39,61 +40,72 @@ class Predict_Point:
 
         key = "base_path"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__base_path = predict_param[key]
 
         key = "outfolder"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__outfolder = predict_param[key]
 
         key = "learned_model"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__learned_model = predict_param[key]
 
         key = "nepoch"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__nepoch = predict_param[key]
 
         key = "num_points"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__num_points = predict_param[key]
 
         key = "category_id"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
-        self.__category_id = predict_param[key]        
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
+        self.__category_id = predict_param[key]
 
         key = "object_id"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__object_id = predict_param[key]
 
         key = "image_name"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__image_name = predict_param[key]
 
         key = self.__category_id
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__category = predict_param[key]
 
         key = "pre_save_folder"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__pre_save_folder = predict_param[key]
 
         key = "gt_save_folder"
         if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s"%(key, self.__predict_param_file))
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
         self.__gt_save_folder = predict_param[key]
 
-        print("##PARAMETER","-"*39)
-        print("*base_path       :", self.__base_path)    
+        print("##PARAMETER", "-"*39)
+        print("*base_path       :", self.__base_path)
         print("*outfolder       :", self.__outfolder)
         print("*learned_model   :", self.__learned_model)
         print("*nepoch          :", self.__nepoch)
@@ -106,33 +118,35 @@ class Predict_Point:
         print("*gt_save_folder  :", self.__gt_save_folder)
         print("-"*50)
 
-    def predict(self, show:bool = False):
+    def predict(self, show: bool = False):
         """学習済みモデルを使用して画像から点群を生成する."""
         # 入力画像path
         file_path = os.path.join(self.__category_id, self.__object_id)
-        read_img_path = os.path.join(self.__base_path, 
-                                    "ShapeNetRendering", 
-                                    file_path, 
-                                    "rendering", 
-                                    self.__image_name)
-        
+        read_img_path = os.path.join(self.__base_path,
+                                     "ShapeNetRendering",
+                                     file_path,
+                                     "rendering",
+                                     self.__image_name)
+
         # グランドトゥルースpath
-        read_gt_path = os.path.join(self.__base_path, 
-                                "ShapeNet_pointclouds", 
-                                file_path, 
-                                "pointcloud_"+str(self.__num_points)+".npy")
+        read_gt_path = os.path.join(self.__base_path,
+                                    "ShapeNet_pointclouds",
+                                    file_path,
+                                    "pointcloud_"+str(self.__num_points)+".npy")
         # 学習済みモデルpath
         pickle_path = os.path.join(".",
-                                    self.__outfolder, 
-                                    self.__category + "-" + str(self.__num_points), 
-                                    self.__learned_model)
+                                   self.__outfolder,
+                                   self.__category + "-" +
+                                   str(self.__num_points),
+                                   self.__learned_model)
 
         # 予測点群の保存path
         try:
             os.makedirs(self.__pre_save_folder)
         except OSError:
             pass
-        save_name = "e%d_p%d_%s_%spng.npy"%(self.__nepoch, self.__num_points, self.__category, self.__image_name[:-4])
+        save_name = "e%d_p%d_%s_%spng.npy" % (
+            self.__nepoch, self.__num_points, self.__category, self.__image_name[:-4])
         pre_save_path = os.path.join(self.__pre_save_folder, save_name)
 
         # gtの保存path
@@ -140,7 +154,8 @@ class Predict_Point:
             os.makedirs(self.__gt_save_folder)
         except OSError:
             pass
-        save_name = "pointcloud_%d_%s.asc"%(self.__num_points, self.__category)
+        save_name = "pointcloud_%d_%s.asc" % (
+            self.__num_points, self.__category)
         gt_save_path = os.path.join(self.__gt_save_folder, save_name)
         print("gt_save_path", gt_save_path)
 
@@ -196,7 +211,7 @@ class Predict_Point:
 
         # showがTrueの場合、予測点群を表示する
         if show:
-            Predict_Point.show_points(predict_points)    
+            Predict_Point.show_points(predict_points)
         # """
 
     # @staticmethod
@@ -243,11 +258,10 @@ class Predict_Point:
     #     Predict_Point.show_points(points)
 
 
-
 if __name__ == "__main__":
     # パラメータファイルの宣言
     predict_param_file = "predict_point_param.json"
-    
+
     # 点群予測クラスのインスタンス化
     pp = Predict_Point(predict_param_file)
 

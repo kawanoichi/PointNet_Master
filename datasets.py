@@ -18,6 +18,7 @@ HEIGHT = 128
 WIDTH = 128
 PAD = 35
 
+
 class GetShapenetDataset(data.Dataset):
     def __init__(self, data_dir_imgs, data_dir_pcl, models, cats, numpoints=1024, variety=False):
         self.data_dir_imgs = data_dir_imgs
@@ -34,17 +35,21 @@ class GetShapenetDataset(data.Dataset):
                 self.modelnames.append(filename)
 
     def __getitem__(self, index):
-        img_path = os.path.join(self.data_dir_imgs, self.modelnames[index], "rendering", (str(int(index % NUM_VIEWS)).zfill(2) + '.png'))
+        img_path = os.path.join(self.data_dir_imgs, self.modelnames[index], "rendering", (str(
+            int(index % NUM_VIEWS)).zfill(2) + '.png'))
         # print(img_path)
         image = cv2.imread(img_path)[4:-5, 4:-5, :3]
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = np.transpose(image, (2, 0, 1))
 
-        pcl_path = self.data_dir_pcl + self.modelnames[index] + '/pointcloud_' + str(self.numpoints) + '.npy'
+        pcl_path = self.data_dir_pcl + \
+            self.modelnames[index] + '/pointcloud_' + \
+            str(self.numpoints) + '.npy'
         pcl_gt = np.load(pcl_path)
 
         if self.variety == True:
-            metadata_path = self.data_dir_imgs + self.modelnames[index] + '/rendering/rendering_metadata.txt'
+            metadata_path = self.data_dir_imgs + \
+                self.modelnames[index] + '/rendering/rendering_metadata.txt'
             metadata = np.loadtxt(metadata_path)
             x = metadata[(int(index % NUM_VIEWS))][0]
             xangle = np.pi / 180. * x
@@ -75,9 +80,12 @@ class GetPix3dDataset(data.Dataset):
         for model in self.models:
             if model['category'] == self.cats:
                 # model/[category]/[modelname] /model.obj
-                modelpath = model['model'].replace("model", pcl)  # pcl_1024/[category]/[modelname]/pcl_1024.obj
-                modelpath = modelpath.replace("pcl_1024", "model", 1)  # model/[category]/[modelname]/pcl_1024.obj
-                modelpath = modelpath.replace("obj", 'npy')  # model/[category]/[modelname]/pcl_1024.npy
+                # pcl_1024/[category]/[modelname]/pcl_1024.obj
+                modelpath = model['model'].replace("model", pcl)
+                # model/[category]/[modelname]/pcl_1024.obj
+                modelpath = modelpath.replace("pcl_1024", "model", 1)
+                # model/[category]/[modelname]/pcl_1024.npy
+                modelpath = modelpath.replace("obj", 'npy')
                 pcl_path = self.data_dir + 'pointclouds/' + modelpath
                 if os.path.exists(pcl_path):
                     self.imgpaths.append(model['img'])
@@ -100,19 +108,23 @@ class GetPix3dDataset(data.Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         mask_image = cv2.imread(mask_path)
         if not image.shape[0] == mask_image.shape[0] or not image.shape[1] == mask_image.shape[1]:
-            mask_image = cv2.resize(mask_image, (image.shape[1], image.shape[0]))
+            mask_image = cv2.resize(
+                mask_image, (image.shape[1], image.shape[0]))
         image = image * mask_image
-        image = image[self.bbox[index][1]:self.bbox[index][3], self.bbox[index][0]:self.bbox[index][2], :]
+        image = image[self.bbox[index][1]:self.bbox[index]
+                      [3], self.bbox[index][0]:self.bbox[index][2], :]
         current_size = image.shape[:2]
         ratio = float(HEIGHT - PAD) / max(current_size)
         new_size = tuple([int(x * ratio) for x in current_size])
-        image = cv2.resize(image, (new_size[1], new_size[0]))  # new_size should be in (width, height) format
+        # new_size should be in (width, height) format
+        image = cv2.resize(image, (new_size[1], new_size[0]))
         delta_w = WIDTH - new_size[1]
         delta_h = HEIGHT - new_size[0]
         top, bottom = delta_h // 2, delta_h - (delta_h // 2)
         left, right = delta_w // 2, delta_w - (delta_w // 2)
         color = [0, 0, 0]
-        image = cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
+        image = cv2.copyMakeBorder(
+            image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
         image = np.transpose(image, (2, 0, 1))
 
         xangle = np.pi / 180. * -90
@@ -146,5 +158,3 @@ def rotate(xyz, xangle=0, yangle=0, zangle=0):
     ]))
 
     return xyz.dot(rotmat)
-
-
