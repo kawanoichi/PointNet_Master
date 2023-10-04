@@ -25,6 +25,17 @@ class Predict_Point:
         # 学習パラメータの読み込み
         self.load_param()
 
+
+
+    def check_param(self, key):
+        """paramにkeyがあるかチェックする."""
+        with open(self.__predict_param_file) as fp:
+            self.predict_param = json.load(fp)
+        if key not in self.predict_param:
+            raise KeyError("key not found: '%s', file: %s" %
+                           (key, self.__predict_param_file))
+        
+    
     def load_param(self) -> None:
         """インスタンス変数としてパラメータファイルを読み込む.
         Raises:
@@ -38,70 +49,48 @@ class Predict_Point:
         with open(self.__predict_param_file) as fp:
             predict_param = json.load(fp)
 
-        key = "base_path"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        key = "base_path"        
+        self.check_param(key)
         self.__base_path = predict_param[key]
 
         key = "outfolder"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__outfolder = predict_param[key]
 
         key = "learned_model"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__learned_model = predict_param[key]
 
         key = "nepoch"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__nepoch = predict_param[key]
 
         key = "num_points"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__num_points = predict_param[key]
 
         key = "category_id"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__category_id = predict_param[key]
 
         key = "object_id"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__object_id = predict_param[key]
 
         key = "image_name"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__image_name = predict_param[key]
 
         key = self.__category_id
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__category = predict_param[key]
 
         key = "pre_save_folder"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__pre_save_folder = predict_param[key]
 
         key = "gt_save_folder"
-        if key not in predict_param:
-            raise KeyError("key not found: '%s', file: %s" %
-                           (key, self.__predict_param_file))
+        self.check_param(key)
         self.__gt_save_folder = predict_param[key]
 
         print("##PARAMETER", "-"*39)
