@@ -25,8 +25,6 @@ class Predict_Point:
         # 学習パラメータの読み込み
         self.load_param()
 
-
-
     def check_param(self, key):
         """paramにkeyがあるかチェックする."""
         with open(self.__predict_param_file) as fp:
@@ -34,8 +32,7 @@ class Predict_Point:
         if key not in self.predict_param:
             raise KeyError("key not found: '%s', file: %s" %
                            (key, self.__predict_param_file))
-        
-    
+
     def load_param(self) -> None:
         """インスタンス変数としてパラメータファイルを読み込む.
         Raises:
@@ -49,7 +46,7 @@ class Predict_Point:
         with open(self.__predict_param_file) as fp:
             predict_param = json.load(fp)
 
-        key = "base_path"        
+        key = "base_path"
         self.check_param(key)
         self.__base_path = predict_param[key]
 
@@ -137,6 +134,7 @@ class Predict_Point:
         save_name = "e%d_p%d_%s_%spng.npy" % (
             self.__nepoch, self.__num_points, self.__category, self.__image_name[:-4])
         pre_save_path = os.path.join(self.__pre_save_folder, save_name)
+        print("pre_save_path", pre_save_path)
 
         # gtの保存path
         try:
@@ -186,6 +184,7 @@ class Predict_Point:
 
         # 点群生成
         points, _, _, _ = gen(image)
+
         points = points.cpu().detach().numpy()
 
         # (1, 3, 1024) >>> (3, 1024)
