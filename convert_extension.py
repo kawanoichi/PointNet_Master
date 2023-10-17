@@ -8,7 +8,7 @@ import os
 def make_ply(coodinate_file, save_ply, point_num):
     # パラメータファイルが存在するかの確認
     # [参考] https://programming-surgeon.com/imageanalysis/ply-python/
-    if not os.path.isfile(save_ply):
+    if os.path.isfile(save_ply):
         raise FileNotFoundError("No file '%s'" % save_ply)
 
     """npyファイルをplyファイルに変換する."""
@@ -63,7 +63,7 @@ def make_ply(coodinate_file, save_ply, point_num):
 
 
 if __name__ == "__main__":
-    coodinate_file = "predict_points/e50_p2048_airplane_15png.npy"
+    coodinate_file = "predict_points/e50_p2048_airplane2_15png.npy"
 
     save_file = coodinate_file[:-3]+"ply"
 

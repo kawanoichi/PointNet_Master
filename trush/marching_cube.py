@@ -20,7 +20,7 @@ def read_ply(file_path):
         return plydata['vertices'].data
     else:
         raise ValueError('PLY file does not contain vertex data.')
-    
+
 
 # マーチングキューブ法による表面抽出
 def marching_cubes(data, threshold=0):
@@ -28,9 +28,13 @@ def marching_cubes(data, threshold=0):
     return verts, faces
 
 # PLYファイルを保存する
+
+
 def save_ply(file_path, verts, faces):
-    vertex = np.array([(v[0], v[1], v[2]) for v in verts], dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
-    face = np.array([(f[0], f[1], f[2]) for f in faces], dtype=[('vertex_indices', 'i4', (3,))])
+    vertex = np.array([(v[0], v[1], v[2]) for v in verts], dtype=[
+                      ('x', 'f4'), ('y', 'f4'), ('z', 'f4')])
+    face = np.array([(f[0], f[1], f[2]) for f in faces],
+                    dtype=[('vertex_indices', 'i4', (3,))])
 
     el_verts = PlyElement.describe(vertex, 'vertex')
     el_faces = PlyElement.describe(face, 'face')
@@ -54,19 +58,20 @@ def main(ply_file_path, output_ply_path):
     print("type(data)", type(data))
     print("data.shape", data.shape)
 
-
     # マーチングキューブ法で表面抽出
     verts, faces = marching_cubes(data)
 
     # 結果の描画
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.plot_trisurf(verts[:, 0], verts[:, 1], faces, verts[:, 2], cmap='viridis')
+    ax.plot_trisurf(verts[:, 0], verts[:, 1], faces,
+                    verts[:, 2], cmap='viridis')
 
     # PLYファイルに保存
     save_ply(output_ply_path, verts, faces)
 
     plt.show()
+
 
 if __name__ == "__main__":
     ply_file = "point_cloud.ply"

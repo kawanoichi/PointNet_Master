@@ -37,6 +37,8 @@ mesh:
 	 python3 create_mesh/mesh.py 
 marching:
 	 python3 create_mesh/marching_cube.py
-zikken:
-	 python3 create_mesh/zikken.py
+surface_run:
+	 python3 work/make_surface.py
+surface_run:
+	 python3 work/zikken.py
 
