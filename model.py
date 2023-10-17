@@ -136,7 +136,6 @@ class generator(nn.Module):
         self.th = nn.Tanh()
 
     def forward(self, x):
-        # print("aaa")
         batchsize = x.size()[0]
         x = self.resnet50.conv1(x)
         x = self.resnet50.bn1(x)
@@ -149,13 +148,11 @@ class generator(nn.Module):
         x = self.resnet50.avgpool(layer4)
         x = x.view(x.size(0), -1)
         x = self.resnet50.fc(x)
-        # print("bbb")
         zmean = self.zmean(x)
         zlog = self.zlog(x)
         zsigma = torch.sqrt(torch.exp(zlog))
         eps = torch.randn(zmean.size()).cuda()
         z = zmean + zsigma * eps
-        # print("ccc")
         x = F.leaky_relu(self.fc1(z))
         x = F.leaky_relu(self.fc2(x))
         x = self.th(self.fc3(x))
