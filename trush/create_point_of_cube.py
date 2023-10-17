@@ -42,7 +42,9 @@ def create_cube_ply(file_path):
 
         # Write faces
         for face in faces:
-            file.write("4 {} {} {} {}\n".format(face[0], face[1], face[2], face[3]))
+            file.write("4 {} {} {} {}\n".format(
+                face[0], face[1], face[2], face[3]))
+
 
 def create_point_cloud_ply(file_path):
     """点群情報だけのplyファイルの作成."""
@@ -71,7 +73,7 @@ def create_point_cloud_ply(file_path):
             file.write("{} {} {}\n".format(vertex[0], vertex[1], vertex[2]))
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     print("開始")
 
     # メッシュ情報を含んだ立方体のplyファイルを作成
