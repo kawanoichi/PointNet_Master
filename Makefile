@@ -29,16 +29,10 @@ check_gpu:
 	python3 enviroment_check/check_tensor_gpu.py
 
 # ソースコード実行
-cube:
-	 python3 create_mesh/create_point_of_cube.py 
-info:
-	 python3 create_mesh/infomation.py 
-mesh:
-	 python3 create_mesh/mesh.py 
-marching:
-	 python3 create_mesh/marching_cube.py
 surface_run:
 	 python3 work/make_surface.py
-surface_run:
+vectors:
+	 python3 work/vectors_26.py
+zikken:
 	 python3 work/zikken.py
 
