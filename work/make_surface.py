@@ -13,7 +13,6 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 import open3d as o3d
-# from sklearn.cluster import KMeans
 
 import rotate_coordinate as rotate
 
@@ -33,6 +32,9 @@ class MakeSurface:
         self.vectors_26 = np.array([])
         self.groupe = None
         self.fig = plt.figure()  # 表示するグラフ
+        self.fig_vertical = 2 # 縦
+        self.fig_horizontal = 3 # 横
+        self.graph_num = 1 # 横
 
         # 画像の存在チェック
         if not os.path.isfile(self.point_file):
@@ -40,10 +42,19 @@ class MakeSurface:
 
         # 26方位ベクトルの作成
         self.vector_26()
-        upper_vector = np.array([0, 1, 0])
-        self.upper_vector_index = np.where(
-            np.all(self.vectors_26 == upper_vector, axis=1))
-        if len(self.upper_vector_index) != 1:
+
+        # y=1方向のベクトルのインデックスを取得
+        y1_vector = np.array([0, 1, 0])
+        self.y1_vector_index = np.where(
+            np.all(self.vectors_26 == y1_vector, axis=1))
+        if len(self.y1_vector_index) != 1:
+            print("Error: number of upper vector is not 1")
+            exit()
+        # x=1方向のベクトルのインデックスを取得
+        x1_vector = np.array([1, 0, 0])
+        self.x1_vector_index = np.where(
+            np.all(self.vectors_26 == x1_vector, axis=1))
+        if len(self.x1_vector_index) != 1:
             print("Error: number of upper vector is not 1")
             exit()
 
@@ -85,24 +96,35 @@ class MakeSurface:
         # 弧度法から度数法に変換
         return np.degrees(theta_rad)
 
-    def show_point(self, ax, points) -> None:
+    def show_point(self, points) -> None:
         """点群を表示する関数.
 
         Args:
             ptCloud(np.ndarray): 点群
         """
+        ax = self.fig.add_subplot(self.fig_vertical,
+                                  self.fig_horizontal,
+                                  self.graph_num,
+                                  projection='3d')
+        self.graph_num += 1
+
         ax.set(xlabel='x', ylabel='y', zlabel='z')
         ax.scatter(points[:, 0],
                    points[:, 1],
                    points[:, 2],
                    c='b')
 
-    def show_normals(self, ax, points, normals) -> None:
+    def show_normals(self, points, normals) -> None:
         """点群と法線ベクトルを表示する関数.
 
         Args:
             points(np.ndarray): 点群
         """
+        ax = self.fig.add_subplot(self.fig_vertical,
+                                  self.fig_horizontal,
+                                  self.graph_num,
+                                  projection='3d')
+        self.graph_num += 1
 
         ax.set(xlabel='x', ylabel='y', zlabel='z')
 
@@ -126,14 +148,15 @@ class MakeSurface:
         # Open3DのPointCloudに変換
         point_cloud = o3d.geometry.PointCloud()
         point_cloud.points = o3d.utility.Vector3dVector(points)
-        # print("point_cloud\n", point_cloud.points)
 
         # 法線情報を計算
         point_cloud.estimate_normals()
 
         # 法線情報にアクセス
         normals = np.asarray(point_cloud.normals)
-        # print("normals.shape", normals.shape)
+
+        # グラフの追加
+        self.show_normals(points, normals)
 
         # 似た方角を向いたベクトルをグループ分け
         self.groupe = np.zeros(normals.shape[0])
@@ -145,14 +168,26 @@ class MakeSurface:
                     self.groupe[i] = j
                     min_theta = angle
 
-        grope_upper_points = points[np.where(
-            self.groupe == self.upper_vector_index[0])]
-        grope_upper_normals = normals[np.where(
-            self.groupe == self.upper_vector_index[0])]
-
+        grope_y1_points = points[np.where(
+            self.groupe == self.y1_vector_index[0])]
+        grope_y1_normals = normals[np.where(
+            self.groupe == self.y1_vector_index[0])]
+        print(f"grope_y1_points: {len(grope_y1_points)}, grope_y1_normals: {len(grope_y1_normals)}")
+        
         # グラフの追加
-        ax = self.fig.add_subplot(2, 2, 3, projection='3d')
-        self.show_normals(ax, grope_upper_points, grope_upper_normals)
+        self.show_point(grope_y1_points)
+
+        grope_x1_points = points[np.where(
+            self.groupe == self.x1_vector_index[0])]
+        grope_x1_normals = normals[np.where(
+            self.groupe == self.x1_vector_index[0])]
+        print(f"grope_x1_points: {len(grope_x1_points)}, grope_x1_normals: {len(grope_x1_normals)}")
+        
+        # グラフの追加
+        self.show_point(grope_x1_points)
+
+
+
 
     def main(self) -> None:
         """点群をメッシュ化し、表示する関数."""
@@ -160,8 +195,7 @@ class MakeSurface:
         ptCloud = np.load(self.point_file)
 
         # グラフの追加
-        ax1 = self.fig.add_subplot(2, 2, 1, projection='3d')
-        self.show_point(ax1, ptCloud)
+        self.show_point(ptCloud)
 
         # 飛行機の向きを調整
         ptCloud2 = ptCloud.copy()
@@ -170,11 +204,10 @@ class MakeSurface:
             ptCloud2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
 
         # グラフの追加
-        ax2 = self.fig.add_subplot(2, 2, 2, projection='3d')
-        self.show_point(ax2, ptCloud2)
+        self.show_point(ptCloud2)
 
         # 法線ベクトルの作成・編集
-        ptCloud = self.edit_normals(ptCloud2)
+        ptCloud = self.edit_normals(ptCloud)
 
         plt.show()
 
