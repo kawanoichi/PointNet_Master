@@ -31,12 +31,24 @@ class MakeSurface:
         """
         self.point_file = point_file
         self.vectors_26 = np.array([])
+        self.groupe = None
+        self.fig = plt.figure()  # 表示するグラフ
 
         # 画像の存在チェック
         if not os.path.isfile(self.point_file):
             raise FileNotFoundError("No file '%s'" % self.point_file)
 
+        # 26方位ベクトルの作成
+        self.vector_26()
+        upper_vector = np.array([0, 1, 0])
+        self.upper_vector_index = np.where(
+            np.all(self.vectors_26 == upper_vector, axis=1))
+        if len(self.upper_vector_index) != 1:
+            print("Error: number of upper vector is not 1")
+            exit()
+
     def vector_26(self):
+        """26方位ベクトル作成関数."""
         kinds_of_coodinate = [-1, 0, 1]
 
         # 26方位のベクトル(終点座標)を作成
@@ -49,57 +61,64 @@ class MakeSurface:
                             self.vectors_26, append_coordinate, axis=0)
         self.vectors_26 = self.vectors_26.reshape(
             (len(kinds_of_coodinate) ^ 3)-1, 3)
-        print("self.vectors_26.shape", self.vectors_26.shape)
 
-    def show_point(self, ptCloud) -> None:
+    def angle_between_vectors(self, vector_a, vector_b):
+        """ベクトル間のなす角を求める関数.
+
+        ベクトルAとベクトルBのなす角を求める.
+
+        Args:
+            vector_a: ベクトルA
+            vector_b: ベクトルB
+        Return:
+            theta_deg: なす角
+        """
+        dot_product = np.dot(vector_a, vector_b)
+        magnitude_a = np.linalg.norm(vector_a)
+        magnitude_b = np.linalg.norm(vector_b)
+
+        cos_theta = dot_product / (magnitude_a * magnitude_b)
+
+        # acosはarccosine関数で、cosの逆関数です。
+        theta_rad = np.arccos(np.clip(cos_theta, -1.0, 1.0))
+
+        # 弧度法から度数法に変換
+        return np.degrees(theta_rad)
+
+    def show_point(self, ax, points) -> None:
         """点群を表示する関数.
 
         Args:
             ptCloud(np.ndarray): 点群
         """
-        # figureを生成
-        fig = plt.figure()
+        ax.set(xlabel='x', ylabel='y', zlabel='z')
+        ax.scatter(points[:, 0],
+                   points[:, 1],
+                   points[:, 2],
+                   c='b')
 
-        ax1 = fig.add_subplot(111, projection='3d')
-        ax1.scatter(ptCloud[:, 0],
-                    ptCloud[:, 1],
-                    ptCloud[:, 2],
-                    c='b')
-        ax1.set_xlabel('X')
-        ax1.set_ylabel('y')
-        ax1.set_zlabel('z')
-
-        plt.show()
-
-    def show_normals(self, ptCloud, normals) -> None:
+    def show_normals(self, ax, points, normals) -> None:
         """点群と法線ベクトルを表示する関数.
 
         Args:
-            ptCloud(np.ndarray): 点群
+            points(np.ndarray): 点群
         """
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+
+        ax.set(xlabel='x', ylabel='y', zlabel='z')
 
         # 点をプロット
-        ax.scatter(ptCloud[:, 0], ptCloud[:, 1],
-                   ptCloud[:, 2], c='b', marker='o', label='Points')
+        ax.scatter(points[:, 0], points[:, 1],
+                   points[:, 2], c='b', marker='o', label='Points')
 
         # 法線ベクトルをプロット
         scale = 0.1  # 矢印のスケール
-        for i in range(len(ptCloud)):
-            if ptCloud[i, 0] < -0.05:
-                ax.quiver(ptCloud[i, 0], ptCloud[i, 1], ptCloud[i, 2],
+        for i in range(len(points)):
+            if points[i, 0] < -0.05:
+                ax.quiver(points[i, 0], points[i, 1], points[i, 2],
                           normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        ax.legend()
-
-        plt.show()
-
     def edit_normals(self, points: np.ndarray) -> None:
-        """法線ベクトルを表示する関数.
+        """法線ベクトルに関連する関数.
 
         Args:
             points(np.ndarray): 点群
@@ -107,66 +126,42 @@ class MakeSurface:
         # Open3DのPointCloudに変換
         point_cloud = o3d.geometry.PointCloud()
         point_cloud.points = o3d.utility.Vector3dVector(points)
-        print("point_cloud\n", point_cloud.points)
+        # print("point_cloud\n", point_cloud.points)
 
         # 法線情報を計算
         point_cloud.estimate_normals()
 
         # 法線情報にアクセス
         normals = np.asarray(point_cloud.normals)
-        print("normals.shape", normals.shape)
+        # print("normals.shape", normals.shape)
 
-        # 類似性の閾値
-        threshold = 0.9
+        # 似た方角を向いたベクトルをグループ分け
+        self.groupe = np.zeros(normals.shape[0])
+        for i, normal in enumerate(normals):
+            min_theta = 180  # 比較するためのなす角
+            for j, vector26 in enumerate(self.vectors_26):
+                angle = int(self.angle_between_vectors(normal, vector26))
+                if angle < min_theta:
+                    self.groupe[i] = j
+                    min_theta = angle
 
-        # クラスタリングを行う
-        labels = []
-        current_label = 0
+        grope_upper_points = points[np.where(
+            self.groupe == self.upper_vector_index[0])]
+        grope_upper_normals = normals[np.where(
+            self.groupe == self.upper_vector_index[0])]
 
-        for i in range(len(normals)):
-            if i == 0:
-                labels.append(current_label)
-            else:
-                # 類似性の計算（内積）
-                similarity = np.dot(normals[i], normals[i - 1])
-                if i < 10:
-                    print(similarity)
-
-                # 閾値を超えたら新しいクラスタとしてラベルを増やす
-                if similarity < threshold:
-                    current_label += 1
-                labels.append(current_label)
-
-        print("number of labels is ", len(labels))
-
-        for i, label in enumerate(labels):
-            if i < 10:
-                print(label)
-        """
-        # クラスタごとに点を分ける
-        clusters = {}
-        for i, label in enumerate(labels):
-            if label not in clusters:
-                clusters[label] = []
-            clusters[label].append(points[i])
-
-        # 各クラスタの点群を表示
-        for label, cluster_points in clusters.items():
-            cluster_points = np.asarray(cluster_points)
-            cluster_cloud = o3d.geometry.PointCloud()
-            cluster_cloud.points = o3d.utility.Vector3dVector(cluster_points)
-            o3d.visualization.draw_geometries([cluster_cloud])
-        # """
+        # グラフの追加
+        ax = self.fig.add_subplot(2, 2, 3, projection='3d')
+        self.show_normals(ax, grope_upper_points, grope_upper_normals)
 
     def main(self) -> None:
         """点群をメッシュ化し、表示する関数."""
         # 点群データの読み込み
         ptCloud = np.load(self.point_file)
-        print("ptCloud.shape", ptCloud.shape)
-        # print("ptCloud.shape", type(ptCloud))
 
-        # 入力点群を表示する
-        # self.show_point(ptCloud)
+        # グラフの追加
+        ax1 = self.fig.add_subplot(2, 2, 1, projection='3d')
+        self.show_point(ax1, ptCloud)
 
         # 飛行機の向きを調整
         ptCloud2 = ptCloud.copy()
@@ -174,13 +169,14 @@ class MakeSurface:
             ptCloud2[i] = rotate.rotate_around_x_axis(point, 90, reverse=False)
             ptCloud2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
 
-        # 入力点群を表示する
-        # self.show_point(ptCloud2)
+        # グラフの追加
+        ax2 = self.fig.add_subplot(2, 2, 2, projection='3d')
+        self.show_point(ax2, ptCloud2)
 
         # 法線ベクトルの作成・編集
-        # ptCloud = self.edit_normals(points=ptCloud)
+        ptCloud = self.edit_normals(ptCloud2)
 
-        self.vector_26()
+        plt.show()
 
         """
         # Poissonサーフェスリコンストラクションを適用
@@ -192,12 +188,24 @@ class MakeSurface:
 
 
 if __name__ == "__main__":
-    print(f"SCRIPT_DIR_PATH : {SCRIPT_DIR_PATH}")
-    print(f"PROJECT_DIR_PATH: {PROJECT_DIR_PATH}")
-    print(f"PLY_DIR_PATH    : {PLY_DIR_PATH}")
+    import time
+    start = time.time()
+
+    # 設定の出力
+    line = "-" * len(f"SCRIPT_DIR_PATH  : {PLY_DIR_PATH}")
+    print(f"{line}")
+    print(f"SCRIPT_DIR_PATH  : {SCRIPT_DIR_PATH}")
+    print(f"PROJECT_DIR_PATH : {PROJECT_DIR_PATH}")
+    print(f"PLY_DIR_PATH     : {PLY_DIR_PATH}")
+    print(f"{line}")
 
     ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane_01png.npy")
     # ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15png.npy")
     ms = MakeSurface(ply_file_path)
     ms.main()
+
+    # 処理時間計測用
+    execute_time = time.time() - start
+    print(f"実行時間: {str(execute_time)[:5]}s")
+
     print("終了")

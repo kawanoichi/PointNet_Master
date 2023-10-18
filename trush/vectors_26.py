@@ -69,6 +69,7 @@ def main():
     print("vectors.shape", vectors.shape)
     show_vector(vectors)
 
+    # 2本のベクトルのなす角を求める
     comparison_vector = np.array([0,  1,  0])
     for vector in vectors:
         angle = int(angle_between_vectors(comparison_vector, vector))
