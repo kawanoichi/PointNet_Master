@@ -12,6 +12,7 @@ help:
 
 format:
 	python -m autopep8 -i *.py
+	python -m autopep8 -i -r work/
 
 train:
 	python3 train.py

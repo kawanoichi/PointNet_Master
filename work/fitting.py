@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def fit_plane(point_cloud):
     """
     入力

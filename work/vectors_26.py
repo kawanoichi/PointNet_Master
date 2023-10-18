@@ -23,32 +23,34 @@ def show_vector(vectors, start=[0, 0, 0]):
 
     ax = fig.add_subplot(111, projection='3d')
     ax.set(xlabel='x', ylabel='y', zlabel='z')
-    ax.axis('equal') # 正方形に設定
+    ax.axis('equal')  # 正方形に設定
 
     ax.set_xlim(-2, 2)
     ax.set_ylim(-2, 2)
     ax.set_zlim(-2, 2)
-    
+
     for vector in vectors:
         ax.quiver(start[0], start[1], start[2],
                   vector[0], vector[1], vector[2],
                   color='blue', length=1, arrow_length_ratio=0.2)
     plt.show()
 
+
 def angle_between_vectors(vector_a, vector_b):
     dot_product = np.dot(vector_a, vector_b)
     magnitude_a = np.linalg.norm(vector_a)
     magnitude_b = np.linalg.norm(vector_b)
-    
+
     cos_theta = dot_product / (magnitude_a * magnitude_b)
-    
+
     # acosはarccosine関数で、cosの逆関数です。
     theta_rad = np.arccos(np.clip(cos_theta, -1.0, 1.0))
-    
+
     # 弧度法から度数法に変換
     theta_deg = np.degrees(theta_rad)
-    
+
     return theta_deg
+
 
 def main():
     """点群をメッシュ化し、表示する関数."""
@@ -63,17 +65,17 @@ def main():
                 if not x == y == z == 0:
                     append_coordinate = np.array([x, y, z])
                     vectors = np.append(vectors, append_coordinate, axis=0)
-    vectors = vectors.reshape((len(kinds_of_coodinate)^3)-1, 3)
+    vectors = vectors.reshape((len(kinds_of_coodinate) ^ 3)-1, 3)
     print("vectors.shape", vectors.shape)
     show_vector(vectors)
 
-    comparison_vector = np.array([ 0,  1,  0])
+    comparison_vector = np.array([0,  1,  0])
     for vector in vectors:
         angle = int(angle_between_vectors(comparison_vector, vector))
         print(f"vector1: {comparison_vector}")
         print(f"vector2: {vector} ")
         print(f"between the vectors is: {angle}")
-    
+
 
 if __name__ == "__main__":
     print("-- 14方位ベクトル表示モジュール --")
