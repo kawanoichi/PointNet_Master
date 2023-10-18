@@ -31,10 +31,12 @@ class MakeSurface:
         self.point_file = point_file
         self.vectors_26 = np.array([])
         self.groupe = None
+
+        # 表示する点群(散布図)に関する変数
         self.fig = plt.figure()  # 表示するグラフ
-        self.fig_vertical = 2 # 縦
-        self.fig_horizontal = 3 # 横
-        self.graph_num = 1 # 横
+        self.fig_vertical = 2  # 縦
+        self.fig_horizontal = 3  # 横
+        self.graph_num = 1  # 横
 
         # 画像の存在チェック
         if not os.path.isfile(self.point_file):
@@ -47,16 +49,11 @@ class MakeSurface:
         y1_vector = np.array([0, 1, 0])
         self.y1_vector_index = np.where(
             np.all(self.vectors_26 == y1_vector, axis=1))
-        if len(self.y1_vector_index) != 1:
-            print("Error: number of upper vector is not 1")
-            exit()
+
         # x=1方向のベクトルのインデックスを取得
         x1_vector = np.array([1, 0, 0])
         self.x1_vector_index = np.where(
             np.all(self.vectors_26 == x1_vector, axis=1))
-        if len(self.x1_vector_index) != 1:
-            print("Error: number of upper vector is not 1")
-            exit()
 
     def vector_26(self):
         """26方位ベクトル作成関数."""
@@ -96,7 +93,7 @@ class MakeSurface:
         # 弧度法から度数法に変換
         return np.degrees(theta_rad)
 
-    def show_point(self, points) -> None:
+    def show_point(self, points, title="None") -> None:
         """点群を表示する関数.
 
         Args:
@@ -108,13 +105,15 @@ class MakeSurface:
                                   projection='3d')
         self.graph_num += 1
 
+        plt.title(title)
         ax.set(xlabel='x', ylabel='y', zlabel='z')
+
         ax.scatter(points[:, 0],
                    points[:, 1],
                    points[:, 2],
                    c='b')
 
-    def show_normals(self, points, normals) -> None:
+    def show_normals(self, points, normals, title="None") -> None:
         """点群と法線ベクトルを表示する関数.
 
         Args:
@@ -126,6 +125,7 @@ class MakeSurface:
                                   projection='3d')
         self.graph_num += 1
 
+        plt.title(title)
         ax.set(xlabel='x', ylabel='y', zlabel='z')
 
         # 点をプロット
@@ -156,7 +156,7 @@ class MakeSurface:
         normals = np.asarray(point_cloud.normals)
 
         # グラフの追加
-        self.show_normals(points, normals)
+        self.show_normals(points, normals, title="Normals")
 
         # 似た方角を向いたベクトルをグループ分け
         self.groupe = np.zeros(normals.shape[0])
@@ -172,22 +172,21 @@ class MakeSurface:
             self.groupe == self.y1_vector_index[0])]
         grope_y1_normals = normals[np.where(
             self.groupe == self.y1_vector_index[0])]
-        print(f"grope_y1_points: {len(grope_y1_points)}, grope_y1_normals: {len(grope_y1_normals)}")
-        
+        print(
+            f"grope_y1_points: {len(grope_y1_points)}, grope_y1_normals: {len(grope_y1_normals)}")
+
         # グラフの追加
-        self.show_point(grope_y1_points)
+        self.show_point(grope_y1_points, title="Direction of y = 1")
 
         grope_x1_points = points[np.where(
             self.groupe == self.x1_vector_index[0])]
         grope_x1_normals = normals[np.where(
             self.groupe == self.x1_vector_index[0])]
-        print(f"grope_x1_points: {len(grope_x1_points)}, grope_x1_normals: {len(grope_x1_normals)}")
-        
+        print(
+            f"grope_x1_points: {len(grope_x1_points)}, grope_x1_normals: {len(grope_x1_normals)}")
+
         # グラフの追加
-        self.show_point(grope_x1_points)
-
-
-
+        self.show_point(grope_x1_points, title="Direction of x = 1")
 
     def main(self) -> None:
         """点群をメッシュ化し、表示する関数."""
@@ -195,7 +194,7 @@ class MakeSurface:
         ptCloud = np.load(self.point_file)
 
         # グラフの追加
-        self.show_point(ptCloud)
+        self.show_point(ptCloud, title="Input Point")
 
         # 飛行機の向きを調整
         ptCloud2 = ptCloud.copy()
@@ -204,7 +203,7 @@ class MakeSurface:
             ptCloud2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
 
         # グラフの追加
-        self.show_point(ptCloud2)
+        self.show_point(ptCloud2, title="Rotated Input Point")
 
         # 法線ベクトルの作成・編集
         ptCloud = self.edit_normals(ptCloud)
