@@ -17,10 +17,10 @@ def npy_to_ply(file_dir, npy_file_name, save_dir=None):
         save_dir = file_dir
     npy_path = os.path.join(file_dir, npy_file_name)
     save_path = os.path.join(save_dir, npy_file_name)
-    
+
     print(f"npy_path : {npy_path}")
     print(f"save_path: {save_path}")
-    
+
     # 読み込み
     points = np.load(npy_path)
     # 保存

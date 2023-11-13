@@ -14,7 +14,6 @@ from matplotlib import pyplot as plt
 import open3d as o3d
 
 import rotate_coordinate as rotate
-import npy_to_ply as ntp
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
@@ -23,6 +22,7 @@ PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")
 
 class MakeSurface:
     """点群から表面を作りplyファイルに保存するクラス."""
+
     def __init__(self, point_file_dir, point_file_name) -> None:
         """コンストラクタ.
 
@@ -137,22 +137,12 @@ class MakeSurface:
                 ax.quiver(points[i, 0], points[i, 1], points[i, 2],
                           normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
-    def edit_normals(self, points: np.ndarray) -> None:
+    def edit_normals(self, points: np.ndarray, normals=None) -> None:
         """法線ベクトルに関連する関数.
 
         Args:
             points(np.ndarray): 点群
         """
-        # Open3DのPointCloudに変換
-        point_cloud = o3d.geometry.PointCloud()
-        point_cloud.points = o3d.utility.Vector3dVector(points)
-
-        # 法線情報を計算
-        point_cloud.estimate_normals()
-
-        # 法線情報にアクセス
-        normals = np.asarray(point_cloud.normals)
-
         # グラフの追加
         self.show_normals(points, normals, title="Normals")
 
@@ -170,8 +160,8 @@ class MakeSurface:
             self.groupe == self.y1_vector_index[0])]
         grope_y1_normals = normals[np.where(
             self.groupe == self.y1_vector_index[0])]
-        print(
-            f"grope_y1_points: {len(grope_y1_points)}, grope_y1_normals: {len(grope_y1_normals)}")
+        print(f"grope_y1_points  : {len(grope_y1_points)}")
+        print(f"grope_y1_normals : {len(grope_y1_normals)}")
 
         # グラフの追加
         self.show_point(grope_y1_points, title="Direction of y = 1")
@@ -180,39 +170,25 @@ class MakeSurface:
             self.groupe == self.x1_vector_index[0])]
         grope_x1_normals = normals[np.where(
             self.groupe == self.x1_vector_index[0])]
-        print(
-            f"grope_x1_points: {len(grope_x1_points)}, grope_x1_normals: {len(grope_x1_normals)}")
+        print(f"grope_x1_points  : {len(grope_x1_points)}")
+        print(f"grope_x1_normals : {len(grope_x1_normals)}")
 
         # グラフの追加
         self.show_point(grope_x1_points, title="Direction of x = 1")
 
         return normals
 
-    def creacte_mesh(self, points, normals):
-        # NumPyの配列からPointCloudを作成
-        point_cloud = o3d.geometry.PointCloud()
-        point_cloud.points = o3d.utility.Vector3dVector(points)
-        
-        # 法線情報を計算
-        point_cloud.estimate_normals()
-        
-        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
-        o3d.visualization.draw_geometries([mesh])
-        
-
     def main(self) -> None:
         """点群をメッシュ化し、表示する関数."""
         # 点群データの読み込み
         point_path = os.path.join(self.point_file_dir, self.point_file_name)
-        
+
         # 画像の存在チェック
         if not os.path.isfile(point_path):
             raise FileNotFoundError("No file '%s'" % point_path)
 
+        # 点群データの読み込み
         points = np.load(point_path)
-        
-        # plyファイルとして保存
-        # ntp.npy_to_ply(self.point_file_dir, self.point_file_name)
 
         # グラフの追加
         self.show_point(points, title="Input Point")
@@ -223,28 +199,29 @@ class MakeSurface:
             points2[i] = rotate.rotate_around_x_axis(point, 90, reverse=False)
             points2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
 
-        # グラフの追加
+        # グラフに追加
         self.show_point(points2, title="Rotated Input Point")
 
-        # 法線ベクトルの作成・編集
-        normals =  self.edit_normals(points)
+        # NumPyの配列からPointCloudを作成
+        point_cloud = o3d.geometry.PointCloud()
+        point_cloud.points = o3d.utility.Vector3dVector(points)
         
-        # """
-        print(f"normals.shape: {normals.shape}")
-        print(f"points.shape : {points.shape}")
-        
-        # plt.show()
-        
-        self.creacte_mesh(points, normals)
-        # """
+        # 法線情報を計算
+        point_cloud.estimate_normals()
 
+        # 法線ベクトルの編集
+        np_normals = np.asarray(point_cloud.normals)
+
+        # 法線ベクトルの作成・編集
+        normals = self.edit_normals(points, np_normals)
+
+        # 点群や法線ベクトルの表示
+        plt.show()
 
         """
-        # Poissonサーフェスリコンストラクションを適用
-        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud, depth=9)
-
-        # 表面を可視化
-        o3d.visualization.draw_geometries([mesh])
+        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
+        o3d.visualization.draw_geometries([point_cloud]) # 点群の表示
+        o3d.visualization.draw_geometries([mesh]) # メッシュの表示
         # """
 
 

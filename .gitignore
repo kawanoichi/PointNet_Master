@@ -1,5 +1,6 @@
 # .gitignore
 
+Open3D/
 
 # パイキャッシュ
 __pycache__/
