@@ -1,27 +1,23 @@
-import numpy as np
+import open3d as o3d
 
+def ball_pivoting(point_cloud):
+    # 法線の計算
+    point_cloud.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
-def angle_between_vectors(vector_a, vector_b):
-    dot_product = np.dot(vector_a, vector_b)
-    magnitude_a = np.linalg.norm(vector_a)
-    magnitude_b = np.linalg.norm(vector_b)
+    # Ball-Pivotingアルゴリズムを使用して面を構築
+    triangles = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(point_cloud, o3d.utility.DoubleVector([0.02, 0.1]))
 
-    cos_theta = dot_product / (magnitude_a * magnitude_b)
+    return triangles
 
-    # acosはarccosine関数で、cosの逆関数です。
-    theta_rad = np.arccos(np.clip(cos_theta, -1.0, 1.0))
+# 仮の点群データの生成
+point_cloud = o3d.geometry.PointCloud()
+points = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0], [0.5, 0.5, 1]]
+point_cloud.points = o3d.utility.Vector3dVector(points)
 
-    # 弧度法から度数法に変換
-    theta_deg = np.degrees(theta_rad)
+# 法線の計算とBall-Pivotingアルゴリズムの実行
+result_mesh = ball_pivoting(point_cloud)
 
-    return theta_deg
+print("result_mesh", result_mesh)
 
-
-# 例として、ベクトルAとベクトルBを定義
-vector_a = np.array([1, 2, 3])
-vector_b = np.array([4, 5, 6])
-
-# なす角を計算
-angle = angle_between_vectors(vector_a, vector_b)
-
-print(f"The angle between the vectors is: {angle} degrees")
+# 結果の表示
+o3d.visualization.draw_geometries([point_cloud, result_mesh])

@@ -5,9 +5,8 @@ plyファイルからmeshを生成する.
     https://tecsingularity.com/open3d/bpa/
     PLYファイルについて
     https://programming-surgeon.com/imageanalysis/ply-python/
-@author kawanoichi
 実行コマンド
-$ python3 mesh.py
+$ make surface_run
 """
 import numpy as np
 import os
@@ -15,6 +14,7 @@ from matplotlib import pyplot as plt
 import open3d as o3d
 
 import rotate_coordinate as rotate
+import npy_to_ply as ntp
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
@@ -22,13 +22,15 @@ PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")
 
 
 class MakeSurface:
-    def __init__(self, point_file: str) -> None:
+    """点群から表面を作りplyファイルに保存するクラス."""
+    def __init__(self, point_file_dir, point_file_name) -> None:
         """コンストラクタ.
 
         Args:
             point_file (str): 点群ファイル(.npy)
         """
-        self.point_file = point_file
+        self.point_file_dir = point_file_dir
+        self.point_file_name = point_file_name
         self.vectors_26 = np.array([])
         self.groupe = None
 
@@ -37,10 +39,6 @@ class MakeSurface:
         self.fig_vertical = 2  # 縦
         self.fig_horizontal = 3  # 横
         self.graph_num = 1  # 横
-
-        # 画像の存在チェック
-        if not os.path.isfile(self.point_file):
-            raise FileNotFoundError("No file '%s'" % self.point_file)
 
         # 26方位ベクトルの作成
         self.vector_26()
@@ -97,7 +95,7 @@ class MakeSurface:
         """点群を表示する関数.
 
         Args:
-            ptCloud(np.ndarray): 点群
+            points(np.ndarray): 点群
         """
         ax = self.fig.add_subplot(self.fig_vertical,
                                   self.fig_horizontal,
@@ -188,27 +186,58 @@ class MakeSurface:
         # グラフの追加
         self.show_point(grope_x1_points, title="Direction of x = 1")
 
+        return normals
+
+    def creacte_mesh(self, points, normals):
+        # NumPyの配列からPointCloudを作成
+        point_cloud = o3d.geometry.PointCloud()
+        point_cloud.points = o3d.utility.Vector3dVector(points)
+        
+        # 法線情報を計算
+        point_cloud.estimate_normals()
+        
+        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
+        o3d.visualization.draw_geometries([mesh])
+        
+
     def main(self) -> None:
         """点群をメッシュ化し、表示する関数."""
         # 点群データの読み込み
-        ptCloud = np.load(self.point_file)
+        point_path = os.path.join(self.point_file_dir, self.point_file_name)
+        
+        # 画像の存在チェック
+        if not os.path.isfile(point_path):
+            raise FileNotFoundError("No file '%s'" % point_path)
+
+        points = np.load(point_path)
+        
+        # plyファイルとして保存
+        # ntp.npy_to_ply(self.point_file_dir, self.point_file_name)
 
         # グラフの追加
-        self.show_point(ptCloud, title="Input Point")
+        self.show_point(points, title="Input Point")
 
         # 飛行機の向きを調整
-        ptCloud2 = ptCloud.copy()
-        for i, point in enumerate(ptCloud2):
-            ptCloud2[i] = rotate.rotate_around_x_axis(point, 90, reverse=False)
-            ptCloud2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
+        points2 = points.copy()
+        for i, point in enumerate(points2):
+            points2[i] = rotate.rotate_around_x_axis(point, 90, reverse=False)
+            points2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
 
         # グラフの追加
-        self.show_point(ptCloud2, title="Rotated Input Point")
+        self.show_point(points2, title="Rotated Input Point")
 
         # 法線ベクトルの作成・編集
-        ptCloud = self.edit_normals(ptCloud)
+        normals =  self.edit_normals(points)
+        
+        # """
+        print(f"normals.shape: {normals.shape}")
+        print(f"points.shape : {points.shape}")
+        
+        # plt.show()
+        
+        self.creacte_mesh(points, normals)
+        # """
 
-        plt.show()
 
         """
         # Poissonサーフェスリコンストラクションを適用
@@ -223,17 +252,25 @@ if __name__ == "__main__":
     import time
     start = time.time()
 
-    # 設定の出力
-    line = "-" * len(f"SCRIPT_DIR_PATH  : {PLY_DIR_PATH}")
-    print(f"{line}")
-    print(f"SCRIPT_DIR_PATH  : {SCRIPT_DIR_PATH}")
-    print(f"PROJECT_DIR_PATH : {PROJECT_DIR_PATH}")
-    print(f"PLY_DIR_PATH     : {PLY_DIR_PATH}")
-    print(f"{line}")
+    massages = []
+    massages.append(f"SCRIPT_DIR_PATH  : {PLY_DIR_PATH}")
+    massages.append(f"PROJECT_DIR_PATH : {PROJECT_DIR_PATH}")
+    massages.append(f"PLY_DIR_PATH     : {PLY_DIR_PATH}")
 
-    ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane_01png.npy")
-    # ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15png.npy")
-    ms = MakeSurface(ply_file_path)
+    max_length = max(len(massage) for massage in massages)
+    line = "_" * max_length
+
+    # 設定の出力
+    print(line)
+    for massage in massages:
+        print(massage)
+    print(line)
+
+    file_name = "e50_p2048_airplane_01png.npy"
+    # file_name = "e50_p2048_airplane2_15png.npy"
+
+    ms = MakeSurface(point_file_dir=PLY_DIR_PATH,
+                     point_file_name=file_name)
     ms.main()
 
     # 処理時間計測用
