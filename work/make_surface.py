@@ -12,6 +12,8 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 import open3d as o3d
+from sklearn.linear_model import RANSACRegressor
+import matplotlib.pyplot as plt
 
 import rotate_coordinate as rotate
 
@@ -31,7 +33,6 @@ class MakeSurface:
         """
         self.point_file_dir = point_file_dir
         self.point_file_name = point_file_name
-        self.vectors_26 = np.array([])
         self.groupe = None
 
         # 表示する点群(散布図)に関する変数
@@ -40,8 +41,11 @@ class MakeSurface:
         self.fig_horizontal = 3  # 横
         self.graph_num = 1  # 横
 
-        # 26方位ベクトルの作成
-        self.vector_26()
+        # 26方位ベクトルの作成([x, y, z])
+        self.vectors_26 = self.vector_26()
+
+        # 26方位に当てはまった各ベクトルの個数
+        self.count_vector_class = None
 
         # y=1方向のベクトルのインデックスを取得
         y1_vector = np.array([0, 1, 0])
@@ -58,15 +62,17 @@ class MakeSurface:
         kinds_of_coodinate = [-1, 0, 1]
 
         # 26方位のベクトル(終点座標)を作成
+        vectors_26 = np.array([])
         for x in kinds_of_coodinate:
             for y in kinds_of_coodinate:
                 for z in kinds_of_coodinate:
                     if not x == y == z == 0:
                         append_coordinate = np.array([x, y, z])
-                        self.vectors_26 = np.append(
-                            self.vectors_26, append_coordinate, axis=0)
-        self.vectors_26 = self.vectors_26.reshape(
+                        vectors_26 = np.append(
+                            vectors_26, append_coordinate, axis=0)
+        vectors_26 = vectors_26.reshape(
             (len(kinds_of_coodinate) ^ 3)-1, 3)
+        return vectors_26
 
     def angle_between_vectors(self, vector_a, vector_b):
         """ベクトル間のなす角を求める関数.
@@ -111,6 +117,25 @@ class MakeSurface:
                    points[:, 2],
                    c='b')
 
+    def show_point_2D(self, points, title="None") -> None:
+        """点群を表示する関数.
+
+        Args:
+            points(np.ndarray): 点群
+        """
+        ax = self.fig.add_subplot(self.fig_vertical,
+                                  self.fig_horizontal,
+                                  self.graph_num)
+        self.graph_num += 1
+
+        plt.title(title)
+        ax.set(xlabel='x', ylabel='y')
+
+        ax.scatter(points[:, 0],
+                   points[:, 1],
+                   c='b',
+                   s=5)
+
     def show_normals(self, points, normals, title="None") -> None:
         """点群と法線ベクトルを表示する関数.
 
@@ -137,12 +162,86 @@ class MakeSurface:
                 ax.quiver(points[i, 0], points[i, 1], points[i, 2],
                           normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
+    def ransac_2d(self, data, title="Ransac 2d"):
+        """面を生成するRANSACを実行する関数(2D).
+        Args:
+            data(np.ndarray): 点群
+        """
+        x = data[:,0]
+        y = data[:,1]
+        # RANSACRegressorを設定
+        model = RANSACRegressor()
+
+        # モデルを適合
+        model.fit(data[:, 0].reshape(-1, 1), data[:, 1])
+
+        # 推定されたモデルのパラメータ
+        inlier_mask = model.inlier_mask_
+        outlier_mask = np.logical_not(inlier_mask)
+
+        ax = self.fig.add_subplot(self.fig_vertical,
+                                  self.fig_horizontal,
+                                  self.graph_num)
+        self.graph_num += 1
+
+        plt.title(title)
+        plt.scatter(x[inlier_mask], y[inlier_mask], color='blue', marker='.', label='Inliers')
+        plt.scatter(x[outlier_mask], y[outlier_mask], color='red', marker='.', label='Outliers')
+        plt.plot(x, model.predict(x.reshape(-1, 1)), color='green', linewidth=2, label='RANSAC Model')
+        plt.legend(loc='lower right')
+        ax.set(xlabel='x', ylabel='y')
+
+    def ransac_3d(self, data, title="Ransac 3d"):
+        """面を生成するRANSACを実行する関数(3D).
+        Args:
+            data(np.ndarray): 点群
+        """
+        # RANSACRegressorを設定
+        model = RANSACRegressor()
+
+        # モデルを適合
+        model.fit(data[:, :2], data[:, 2])
+
+        # 推定されたモデルのパラメータ
+        inlier_mask = model.inlier_mask_
+        outlier_mask = np.logical_not(inlier_mask)
+
+        # 結果の可視化
+        plt.title(title)
+        ax = self.fig.add_subplot(self.fig_vertical,
+                                  self.fig_horizontal,
+                                  self.graph_num,
+                                  projection='3d')
+        self.graph_num += 1
+        ax.scatter(data[inlier_mask, 0], data[inlier_mask, 1],
+                   data[inlier_mask, 2], color='blue', marker='.', label='Inliers')
+        ax.scatter(data[outlier_mask, 0], data[outlier_mask, 1],
+                   data[outlier_mask, 2], color='red', marker='.', label='Outliers')
+
+        # 推定された平面を可視化
+        xx, yy = np.meshgrid(np.linspace(data[:, 0].min(), data[:, 0].max(), 10),
+                             np.linspace(data[:, 1].min(), data[:, 1].max(), 10))
+        zz = model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+        ax.plot_surface(xx, yy, zz, alpha=0.5,
+                        color='green', label='RANSAC Model')
+
+        ax.set(xlabel='x', ylabel='y', zlabel='z')
+        ax.legend()
+
     def edit_normals(self, points: np.ndarray, normals=None) -> None:
         """法線ベクトルに関連する関数.
 
         Args:
             points(np.ndarray): 点群
+
+        Variable:
+            self.groupe:
+                点群の座標のインデックスに関連して、
+                26ベクトルの一番近いベクトルのインデックスを格納
         """
+        if normals is None:
+            normals = np.asarray(points.normals)
+
         # グラフの追加
         self.show_normals(points, normals, title="Normals")
 
@@ -156,25 +255,29 @@ class MakeSurface:
                     self.groupe[i] = j
                     min_theta = angle
 
-        grope_y1_points = points[np.where(
-            self.groupe == self.y1_vector_index[0])]
-        grope_y1_normals = normals[np.where(
-            self.groupe == self.y1_vector_index[0])]
-        print(f"grope_y1_points  : {len(grope_y1_points)}")
-        print(f"grope_y1_normals : {len(grope_y1_normals)}")
+        # count_vector_classの作成
+        # グループ分けされたベクトルの個数をカウントする
+        self.count_vector_class = np.zeros(26)
+        for i in range(self.vectors_26.shape[0]):
+            self.count_vector_class[i] = \
+                np.count_nonzero(self.groupe == i)
+        print(f"self.count_vector_class:\n {self.count_vector_class}")
 
-        # グラフの追加
-        self.show_point(grope_y1_points, title="Direction of y = 1")
+        # 最も多い要素を含むグループの点をグラフに追加
+        vector_index = np.argmax(self.count_vector_class)
+        max_grope_points = points[np.where(self.groupe == vector_index)]
+        self.show_point(max_grope_points, title="points of many vector groupe")
+        print(
+            f"self.vectors_26[vector_index]: {self.vectors_26[vector_index]}")
 
-        grope_x1_points = points[np.where(
-            self.groupe == self.x1_vector_index[0])]
-        grope_x1_normals = normals[np.where(
-            self.groupe == self.x1_vector_index[0])]
-        print(f"grope_x1_points  : {len(grope_x1_points)}")
-        print(f"grope_x1_normals : {len(grope_x1_normals)}")
+        self.show_point_2D(max_grope_points, title="2D")
 
-        # グラフの追加
-        self.show_point(grope_x1_points, title="Direction of x = 1")
+        self.ransac_2d(max_grope_points)
+
+        # ベクトルの符号を逆にしてみる
+        invert_some_normals = normals.copy()
+        invert_some_normals[np.where(self.groupe == vector_index)] *= -1
+        self.show_normals(points, invert_some_normals, title="invert vector")
 
         return normals
 
@@ -200,12 +303,12 @@ class MakeSurface:
             points2[i] = rotate.rotate_around_y_axis(point, 90, reverse=False)
 
         # グラフに追加
-        self.show_point(points2, title="Rotated Input Point")
+        # self.show_point(points2, title="Rotated Input Point")
 
         # NumPyの配列からPointCloudを作成
         point_cloud = o3d.geometry.PointCloud()
         point_cloud.points = o3d.utility.Vector3dVector(points)
-        
+
         # 法線情報を計算
         point_cloud.estimate_normals()
 
