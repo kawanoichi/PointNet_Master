@@ -5,15 +5,14 @@
     "nepoch"       : 50,
     "num_points"   : 2048,
     "category_id"  : "02691156",
-    "object_id"    : "1a6ad7a24bb89733f412783097373bdc",
+    "object_id"    : "1a32f10b20170883663e90eaf6b4ca52",
     "image_name"   : "15.png",
     "# 予測座標を保存するpath": "None",
     "pre_save_folder" : "predict_points",
     "gt_save_folder"  : "gt_points",
     
     
-    
-    
+    "object_id2"    : "1a6ad7a24bb89733f412783097373bdc",
     "02691156" : "airplane",
     "02828884" : "bench",
     "02933112" : "cabinet",

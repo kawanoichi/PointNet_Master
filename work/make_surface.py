@@ -12,10 +12,12 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 import open3d as o3d
-from sklearn.linear_model import RANSACRegressor
+# from sklearn.linear_model import RANSACRegressor
 import matplotlib.pyplot as plt
+# import cv2
 
 import rotate_coordinate as rotate
+
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
@@ -56,6 +58,13 @@ class MakeSurface:
         x1_vector = np.array([1, 0, 0])
         self.x1_vector_index = np.where(
             np.all(self.vectors_26 == x1_vector, axis=1))
+
+        # self.x_max = 0
+        # self.x_min = 0
+        # self.y_max = 0
+        # self.y_min = 0
+        # self.z_max = 0
+        # self.z_min = 0
 
     def vector_26(self):
         """26方位ベクトル作成関数."""
@@ -158,75 +167,9 @@ class MakeSurface:
         # 法線ベクトルをプロット
         scale = 0.1  # 矢印のスケール
         for i in range(len(points)):
-            if points[i, 0] < -0.05:
+            if points[i, 0] < -0.05: # 一部を表示
                 ax.quiver(points[i, 0], points[i, 1], points[i, 2],
-                          normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
-
-    def ransac_2d(self, data, title="Ransac 2d"):
-        """面を生成するRANSACを実行する関数(2D).
-        Args:
-            data(np.ndarray): 点群
-        """
-        x = data[:,0]
-        y = data[:,1]
-        # RANSACRegressorを設定
-        model = RANSACRegressor()
-
-        # モデルを適合
-        model.fit(data[:, 0].reshape(-1, 1), data[:, 1])
-
-        # 推定されたモデルのパラメータ
-        inlier_mask = model.inlier_mask_
-        outlier_mask = np.logical_not(inlier_mask)
-
-        ax = self.fig.add_subplot(self.fig_vertical,
-                                  self.fig_horizontal,
-                                  self.graph_num)
-        self.graph_num += 1
-
-        plt.title(title)
-        plt.scatter(x[inlier_mask], y[inlier_mask], color='blue', marker='.', label='Inliers')
-        plt.scatter(x[outlier_mask], y[outlier_mask], color='red', marker='.', label='Outliers')
-        plt.plot(x, model.predict(x.reshape(-1, 1)), color='green', linewidth=2, label='RANSAC Model')
-        plt.legend(loc='lower right')
-        ax.set(xlabel='x', ylabel='y')
-
-    def ransac_3d(self, data, title="Ransac 3d"):
-        """面を生成するRANSACを実行する関数(3D).
-        Args:
-            data(np.ndarray): 点群
-        """
-        # RANSACRegressorを設定
-        model = RANSACRegressor()
-
-        # モデルを適合
-        model.fit(data[:, :2], data[:, 2])
-
-        # 推定されたモデルのパラメータ
-        inlier_mask = model.inlier_mask_
-        outlier_mask = np.logical_not(inlier_mask)
-
-        # 結果の可視化
-        plt.title(title)
-        ax = self.fig.add_subplot(self.fig_vertical,
-                                  self.fig_horizontal,
-                                  self.graph_num,
-                                  projection='3d')
-        self.graph_num += 1
-        ax.scatter(data[inlier_mask, 0], data[inlier_mask, 1],
-                   data[inlier_mask, 2], color='blue', marker='.', label='Inliers')
-        ax.scatter(data[outlier_mask, 0], data[outlier_mask, 1],
-                   data[outlier_mask, 2], color='red', marker='.', label='Outliers')
-
-        # 推定された平面を可視化
-        xx, yy = np.meshgrid(np.linspace(data[:, 0].min(), data[:, 0].max(), 10),
-                             np.linspace(data[:, 1].min(), data[:, 1].max(), 10))
-        zz = model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-        ax.plot_surface(xx, yy, zz, alpha=0.5,
-                        color='green', label='RANSAC Model')
-
-        ax.set(xlabel='x', ylabel='y', zlabel='z')
-        ax.legend()
+                            normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
     def edit_normals(self, points: np.ndarray, normals=None) -> None:
         """法線ベクトルに関連する関数.
@@ -271,13 +214,18 @@ class MakeSurface:
             f"self.vectors_26[vector_index]: {self.vectors_26[vector_index]}")
 
         self.show_point_2D(max_grope_points, title="2D")
-
-        self.ransac_2d(max_grope_points)
-
+        
         # ベクトルの符号を逆にしてみる
-        invert_some_normals = normals.copy()
-        invert_some_normals[np.where(self.groupe == vector_index)] *= -1
-        self.show_normals(points, invert_some_normals, title="invert vector")
+        # invert_some_normals = normals.copy()
+        # invert_some_normals[np.where(self.groupe == vector_index)] *= -1
+        # self.show_normals(points, invert_some_normals, title="invert vector")
+        
+        # 点群の座標は少数なので、座標も1000倍しないとだめ？
+        # img = np.zeros((1000, 1000), dtype=np.uint8)
+
+        # # 点群の画像を作成
+        # for point in points:
+        #     cv2.circle(img, tuple(point), 2, 255, -1)
 
         return normals
 
@@ -292,6 +240,13 @@ class MakeSurface:
 
         # 点群データの読み込み
         points = np.load(point_path)
+
+        # self.x_max = max(points[:,0])
+        # self.x_min = min(points[:,0])
+        # self.y_max = max(points[:,1])
+        # self.y_min = min(points[:,1])
+        # self.z_max = max(points[:,2])
+        # self.z_min = min(points[:,2])
 
         # グラフの追加
         self.show_point(points, title="Input Point")
@@ -321,6 +276,16 @@ class MakeSurface:
         # 点群や法線ベクトルの表示
         plt.show()
 
+        # 座標と法線ベクトルをopen3dの形式に変換
+        mesh = o3d.geometry.TriangleMesh()
+        mesh.vertices = o3d.utility.Vector3dVector(points)
+        mesh.vertex_normals = o3d.utility.Vector3dVector(np_normals)  # ここに法線ベクトルを入れる
+        
+        # PLYファイルに保存
+        # save_path = os.path.join(PROJECT_DIR_PATH, "ply_data", 'mesh.ply')
+        # o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
+
+
         """
         mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
         o3d.visualization.draw_geometries([point_cloud]) # 点群の表示
@@ -348,6 +313,8 @@ if __name__ == "__main__":
 
     file_name = "e50_p2048_airplane_01png.npy"
     # file_name = "e50_p2048_airplane2_15png.npy"
+    # file_name = "e50_p2048_airplane_00png.npy"
+    # file_name = "e50_p1024_chair_00png.npy"
 
     ms = MakeSurface(point_file_dir=PLY_DIR_PATH,
                      point_file_name=file_name)

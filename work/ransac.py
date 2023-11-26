@@ -1,3 +1,8 @@
+"""Ransac処理を行う関数のバックアップ
+うまくいかなかったが、念のために残しておく
+MakeSurfaceにそのまま追加するだけでクラス関数として使用できるはず
+"""
+
 import numpy as np
 import os
 from sklearn.linear_model import RANSACRegressor
@@ -9,24 +14,46 @@ PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
 PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")
 
 
-def make_data():
-    # ダミーの3D点群データを生成
-    np.random.seed(42)
-    x = 10 * np.random.rand(100)
-    y = 2 * x - 1 + np.random.normal(0, 1, 100)
-    z = 3 * x + 5 * np.random.normal(0, 1, 100)
+def ransac_2d(self, data, title="Ransac 2d"):
+    """面を生成するRANSACを実行する関数(2D).
+    Args:
+        data(np.ndarray): 点群
+    """
+    x = data[:, 0]
+    y = data[:, 1]
+    # RANSACRegressorを設定
+    model = RANSACRegressor(min_samples=20,
+                            residual_threshold=0.1,
+                            max_trials=200)
 
-    # ノイズを追加
-    y[::2] += 10 * np.random.normal(0, 1, 50)
+    # モデルを適合
+    model.fit(data[:, 0].reshape(-1, 1), data[:, 1])
 
-    # 3D点群データを整形
-    data = np.column_stack((x, y, z))
-    print(f"data.shape: {data.shape}")
+    # 推定されたモデルのパラメータ
+    inlier_mask = model.inlier_mask_
+    outlier_mask = np.logical_not(inlier_mask)
 
-    return data
+    ax = self.fig.add_subplot(self.fig_vertical,
+                              self.fig_horizontal,
+                              self.graph_num)
+    self.graph_num += 1
+
+    plt.title(title)
+    plt.scatter(x[inlier_mask], y[inlier_mask],
+                color='blue', marker='.', label='Inliers')
+    plt.scatter(x[outlier_mask], y[outlier_mask],
+                color='red', marker='.', label='Outliers')
+    plt.plot(x, model.predict(x.reshape(-1, 1)),
+             color='green', linewidth=2, label='RANSAC Model')
+    plt.legend(loc='lower right')
+    ax.set(xlabel='x', ylabel='y')
 
 
-def ransac(data):
+def ransac_3d(self, data, title="Ransac 3d"):
+    """面を生成するRANSACを実行する関数(3D).
+    Args:
+        data(np.ndarray): 点群
+    """
     # RANSACRegressorを設定
     model = RANSACRegressor()
 
@@ -38,8 +65,12 @@ def ransac(data):
     outlier_mask = np.logical_not(inlier_mask)
 
     # 結果の可視化
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    plt.title(title)
+    ax = self.fig.add_subplot(self.fig_vertical,
+                              self.fig_horizontal,
+                              self.graph_num,
+                              projection='3d')
+    self.graph_num += 1
     ax.scatter(data[inlier_mask, 0], data[inlier_mask, 1],
                data[inlier_mask, 2], color='blue', marker='.', label='Inliers')
     ax.scatter(data[outlier_mask, 0], data[outlier_mask, 1],
@@ -49,28 +80,8 @@ def ransac(data):
     xx, yy = np.meshgrid(np.linspace(data[:, 0].min(), data[:, 0].max(), 10),
                          np.linspace(data[:, 1].min(), data[:, 1].max(), 10))
     zz = model.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-    ax.plot_surface(xx, yy, zz, alpha=0.5, color='green', label='RANSAC Model')
+    ax.plot_surface(xx, yy, zz, alpha=0.5,
+                    color='green', label='RANSAC Model')
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
+    ax.set(xlabel='x', ylabel='y', zlabel='z')
     ax.legend()
-    plt.show()
-
-
-if __name__ == "__main__":
-    # data = make_data()
-    file_name = "e50_p2048_airplane_01png.npy"
-
-    # 点群データの読み込み
-    point_path = os.path.join(PLY_DIR_PATH, file_name)
-
-    # 画像の存在チェック
-    if not os.path.isfile(point_path):
-        raise FileNotFoundError("No file '%s'" % point_path)
-
-    # 点群データの読み込み
-    data = np.load(point_path)
-
-    # 面推測
-    ransac(data)
