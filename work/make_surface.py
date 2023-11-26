@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 import open3d as o3d
 # from sklearn.linear_model import RANSACRegressor
 import matplotlib.pyplot as plt
-# import cv2
+import cv2
 
 import rotate_coordinate as rotate
 
@@ -221,11 +221,14 @@ class MakeSurface:
         # self.show_normals(points, invert_some_normals, title="invert vector")
         
         # 点群の座標は少数なので、座標も1000倍しないとだめ？
-        # img = np.zeros((1000, 1000), dtype=np.uint8)
+        img = np.zeros((1000, 1000), dtype=np.uint8)
 
-        # # 点群の画像を作成
-        # for point in points:
-        #     cv2.circle(img, tuple(point), 2, 255, -1)
+        # 点群の画像を作成
+        for point in points:
+            cv2.circle(img, tuple(point), 2, 255, -1)
+        
+        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
+        cv2.imwrite(save_path, img)
 
         return normals
 
@@ -286,7 +289,7 @@ class MakeSurface:
         # o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
 
-        """
+        # """
         mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
         o3d.visualization.draw_geometries([point_cloud]) # 点群の表示
         o3d.visualization.draw_geometries([mesh]) # メッシュの表示
