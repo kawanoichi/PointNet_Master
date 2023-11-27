@@ -285,7 +285,7 @@ class MakeSurface:
         normals = self.edit_normals(points, np_normals)
 
         # 点群や法線ベクトルの表示
-        # plt.show()
+        plt.show()
         # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
         # plt.savefig(save_path)
 
@@ -325,9 +325,11 @@ if __name__ == "__main__":
     print(line)
 
     file_name = "e50_p2048_airplane_01png.npy"
+    # file_name = "e50_p2048_test_image_airplane.npy"
     # file_name = "e50_p2048_airplane2_15png.npy"
     # file_name = "e50_p2048_airplane_00png.npy"
     # file_name = "e50_p1024_chair_00png.npy"
+    # file_name = ""
 
     ms = MakeSurface(point_file_dir=PLY_DIR_PATH,
                      point_file_name=file_name)
