@@ -13,6 +13,7 @@ data/*
 # 画像データ
 *png
 *jpg
+!test_image_airplane.png
 
 # 座標データ
 # *npy
