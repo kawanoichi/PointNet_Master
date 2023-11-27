@@ -31,9 +31,9 @@ check_gpu:
 
 # ソースコード実行
 surface_run:
-	 python3 work/make_surface.py
+	 poetry run python3 work/make_surface.py
 vectors:
-	 python3 work/vectors_26.py
+	 poetry run python3 work/vectors_26.py
 zikken:
-	 python3 work/zikken.py
+	 poetry run python3 work/zikken.py
 

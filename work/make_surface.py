@@ -10,10 +10,11 @@ $ make surface_run
 """
 import numpy as np
 import os
-from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 import open3d as o3d
 # from sklearn.linear_model import RANSACRegressor
-import matplotlib.pyplot as plt
 import cv2
 
 import rotate_coordinate as rotate
@@ -58,13 +59,6 @@ class MakeSurface:
         x1_vector = np.array([1, 0, 0])
         self.x1_vector_index = np.where(
             np.all(self.vectors_26 == x1_vector, axis=1))
-
-        # self.x_max = 0
-        # self.x_min = 0
-        # self.y_max = 0
-        # self.y_min = 0
-        # self.z_max = 0
-        # self.z_min = 0
 
     def vector_26(self):
         """26方位ベクトル作成関数."""
@@ -188,6 +182,10 @@ class MakeSurface:
         # グラフの追加
         self.show_normals(points, normals, title="Normals")
 
+
+        """
+        点群を法線の向きでグループ分け
+        """
         # 似た方角を向いたベクトルをグループ分け
         self.groupe = np.zeros(normals.shape[0])
         for i, normal in enumerate(normals):
@@ -220,16 +218,26 @@ class MakeSurface:
         # invert_some_normals[np.where(self.groupe == vector_index)] *= -1
         # self.show_normals(points, invert_some_normals, title="invert vector")
         
+        
+        """
+        ハフ変換
+        """
         # 点群の座標は少数なので、座標も1000倍しないとだめ？
         img = np.zeros((1000, 1000), dtype=np.uint8)
 
         # 点群の画像を作成
-        for point in points:
-            cv2.circle(img, tuple(point), 2, 255, -1)
+        for point in max_grope_points:
+            # print(f"point: {point}")
+            x = int(point[0] * 1000) + 500
+            y = int(point[1] * 1000) + 500
+            # print(f"x, y: {x, y}")
+            cv2.circle(img, (x, y), 2, 255, -1)
         
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
         cv2.imwrite(save_path, img)
 
+        
+        
         return normals
 
     def main(self) -> None:
@@ -277,7 +285,9 @@ class MakeSurface:
         normals = self.edit_normals(points, np_normals)
 
         # 点群や法線ベクトルの表示
-        plt.show()
+        # plt.show()
+        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
+        # plt.savefig(save_path)
 
         # 座標と法線ベクトルをopen3dの形式に変換
         mesh = o3d.geometry.TriangleMesh()
@@ -289,7 +299,7 @@ class MakeSurface:
         # o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
 
-        # """
+        """
         mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
         o3d.visualization.draw_geometries([point_cloud]) # 点群の表示
         o3d.visualization.draw_geometries([mesh]) # メッシュの表示
