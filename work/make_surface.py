@@ -165,6 +165,21 @@ class MakeSurface:
                 ax.quiver(points[i, 0], points[i, 1], points[i, 2],
                             normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
+    def draw_line(self, img, theta, rho):
+        h, w = img.shape[:2]
+        if np.isclose(np.sin(theta), 0):
+            x1, y1 = rho, 0
+            x2, y2 = rho, h
+        else:
+            calc_y = lambda x: rho / np.sin(theta) - x * np.cos(theta) / np.sin(theta)
+            x1, y1 = 0, calc_y(0)
+            x2, y2 = w, calc_y(w)
+
+        # float -> int
+        x1, y1, x2, y2 = list(map(int, [x1, y1, x2, y2]))
+
+        cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
     def edit_normals(self, points: np.ndarray, normals=None) -> None:
         """法線ベクトルに関連する関数.
 
@@ -224,20 +239,29 @@ class MakeSurface:
         """
         # 点群の座標は少数なので、座標も1000倍しないとだめ？
         img = np.zeros((1000, 1000), dtype=np.uint8)
+        img += 255
 
         # 点群の画像を作成
         for point in max_grope_points:
-            # print(f"point: {point}")
             x = int(point[0] * 1000) + 500
             y = int(point[1] * 1000) + 500
-            # print(f"x, y: {x, y}")
-            cv2.circle(img, (x, y), 2, 255, -1)
+            cv2.circle(img, (x, y), 2, 0, -1)
         
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
         cv2.imwrite(save_path, img)
 
+
+        edges = cv2.Canny(img, 50, 150)
+        lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=240)
         
+        if lines is not None:
+            print(f"len(lines): {len(lines)}")
+            for rho, theta in lines.squeeze(axis=1):
+                self.draw_line(img, theta, rho)
         
+        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken2.png')
+        cv2.imwrite(save_path, img)
+
         return normals
 
     def main(self) -> None:
@@ -285,7 +309,7 @@ class MakeSurface:
         normals = self.edit_normals(points, np_normals)
 
         # 点群や法線ベクトルの表示
-        plt.show()
+        # plt.show()
         # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
         # plt.savefig(save_path)
 
