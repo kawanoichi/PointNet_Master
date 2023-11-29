@@ -298,13 +298,12 @@ class MakeSurface:
 
         for i, point in enumerate(point_of_wing):
             if abs(point[0] - new_line[0,0,0]) < thre:
-                # print(f"point: {point.shape}")
-                # print(f"classed_points:\n {classed_points.shape}")
                 classed_points = np.vstack((classed_points, point))
-                # classed_points = np.append(classed_points, point, axis=0)
 
-        print(f"classed_points.shape: {classed_points.shape}")
 
+        classed_points = (classed_points - 500) * 0.001
+
+        self.show_point(classed_points, title="Part of wing")
 
         return normals
 
@@ -319,13 +318,6 @@ class MakeSurface:
 
         # 点群データの読み込み
         points = np.load(point_path)
-
-        # self.x_max = max(points[:,0])
-        # self.x_min = min(points[:,0])
-        # self.y_max = max(points[:,1])
-        # self.y_min = min(points[:,1])
-        # self.z_max = max(points[:,2])
-        # self.z_min = min(points[:,2])
 
         # グラフの追加
         self.show_point(points, title="Input Point")
@@ -354,8 +346,8 @@ class MakeSurface:
 
         # 点群や法線ベクトルの表示
         # plt.show()
-        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
-        # plt.savefig(save_path)
+        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
+        plt.savefig(save_path)
 
         # 座標と法線ベクトルをopen3dの形式に変換
         mesh = o3d.geometry.TriangleMesh()

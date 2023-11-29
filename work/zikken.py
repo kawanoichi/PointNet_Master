@@ -1,9 +1,15 @@
 import numpy as np
 import open3d as o3d
+# import matplotlib
+# matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+import os
+import cv2
+
 # from pyntcloud import PyntCloud
 from scipy.spatial import Delaunay
 
-import os
+
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
 PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")
@@ -45,12 +51,16 @@ def create_mesh():
     o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
 def zikken():
-    a = np.array([1,2,3])
-    b = np.array([4,5,6])
-    # c = np.append(a, b)
-    c = np.vstack((a, b))
-    print(c)
-    
+    plt.ioff() 
+    # 画像の読み込み
+    img = cv2.imread('work/test.png') 
+    # カラーデータの色空間の変換 
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)) 
+
+    # 画像の表示
+    plt.show()
+
+
 if __name__ == "__main__":
     print("実験")
     # create_mesh()
