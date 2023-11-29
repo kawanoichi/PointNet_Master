@@ -18,6 +18,7 @@ import open3d as o3d
 import cv2
 
 import rotate_coordinate as rotate
+from image_processing import ImageProcessing as ImaP
 
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -165,21 +166,6 @@ class MakeSurface:
                 ax.quiver(points[i, 0], points[i, 1], points[i, 2],
                             normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
-    def draw_line(self, img, theta, rho):
-        h, w = img.shape[:2]
-        if np.isclose(np.sin(theta), 0):
-            x1, y1 = rho, 0
-            x2, y2 = rho, h
-        else:
-            calc_y = lambda x: rho / np.sin(theta) - x * np.cos(theta) / np.sin(theta)
-            x1, y1 = 0, calc_y(0)
-            x2, y2 = w, calc_y(w)
-
-        # float -> int
-        x1, y1, x2, y2 = list(map(int, [x1, y1, x2, y2]))
-
-        cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-
     def edit_normals(self, points: np.ndarray, normals=None) -> None:
         """法線ベクトルに関連する関数.
 
@@ -247,20 +233,78 @@ class MakeSurface:
             y = int(point[1] * 1000) + 500
             cv2.circle(img, (x, y), 2, 0, -1)
         
+        point_img = img.copy()
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
-        cv2.imwrite(save_path, img)
+        cv2.imwrite(save_path, point_img)
 
-
+        # エッジ検出
         edges = cv2.Canny(img, 50, 150)
+        
+        # ハフ変換
+        # rho, theta = line
         lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=240)
         
         if lines is not None:
             print(f"len(lines): {len(lines)}")
             for rho, theta in lines.squeeze(axis=1):
-                self.draw_line(img, theta, rho)
+                ImaP.draw_line(img, theta, rho)
+        else:
+            print("Error: 線が見つかりません")
+            return normals
         
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken2.png')
         cv2.imwrite(save_path, img)
+
+        """
+        重複している線を削除
+        """
+        # lineを並び替え
+        lines_reshape = lines.reshape(5,2)
+        new_line = lines_reshape[np.argsort(lines_reshape[:,0])]
+        
+        pre_rho = 0
+        thre = 10
+        delete_index = []
+        for i, line in enumerate(new_line):
+            rho, theta = line
+            if abs(pre_rho - rho) < thre:
+                delete_index.append(i)
+            pre_rho = rho
+                
+        new_line = np.delete(new_line, delete_index, 0)
+        
+        img = point_img.copy()
+
+        if new_line is not None:
+            new_line = new_line.reshape(new_line.shape[0], 1, 2)
+            # print(f"len(lines): {len(lines)}")
+            for rho, theta in new_line.squeeze(axis=1):
+                ImaP.draw_line(img, theta, rho)
+        else:
+            print("Error: 線が見つかりません")
+            return normals
+        
+        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken3.png')
+        cv2.imwrite(save_path, img)
+
+
+        """
+        点群の割り当て
+        - 一枚のラインずつみていく？
+        """
+        point_of_wing = max_grope_points * 1000 + 500
+        thre = 10
+        classed_points = np.zeros((1,3))
+
+        for i, point in enumerate(point_of_wing):
+            if abs(point[0] - new_line[0,0,0]) < thre:
+                # print(f"point: {point.shape}")
+                # print(f"classed_points:\n {classed_points.shape}")
+                classed_points = np.vstack((classed_points, point))
+                # classed_points = np.append(classed_points, point, axis=0)
+
+        print(f"classed_points.shape: {classed_points.shape}")
+
 
         return normals
 

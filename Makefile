@@ -11,8 +11,8 @@ help:
 	@echo " $$ make check torch"
 
 format:
-	python -m autopep8 -i *.py
-	python -m autopep8 -i -r work/
+	poetry run python3 -m autopep8 -i *.py
+	poetry run python3 -m autopep8 -i -r work/
 
 train:
 	python3 train.py

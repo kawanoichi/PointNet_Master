@@ -1,6 +1,6 @@
 import numpy as np
 import open3d as o3d
-from pyntcloud import PyntCloud
+# from pyntcloud import PyntCloud
 from scipy.spatial import Delaunay
 
 import os
@@ -44,10 +44,17 @@ def create_mesh():
     save_path = os.path.join(PROJECT_DIR_PATH, "ply_data", 'zikken.ply')
     o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
-
+def zikken():
+    a = np.array([1,2,3])
+    b = np.array([4,5,6])
+    # c = np.append(a, b)
+    c = np.vstack((a, b))
+    print(c)
+    
 if __name__ == "__main__":
     print("実験")
-    create_mesh()
+    # create_mesh()
+    zikken()
     print("完了")
     
 
