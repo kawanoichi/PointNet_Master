@@ -28,17 +28,20 @@ class MakeSurface:
     def make_surface(self):
         """点群をメッシュ化し、表示する関数."""
         # 点群データの読み込み
+        print(f"self.point_file:{self.point_file}")
         ptCloud = o3d.io.read_point_cloud(self.point_file)
 
-        # 法線情報を計算
-        ptCloud.estimate_normals()
+        print(f"ptCloud: {ptCloud}")
 
-        # ポワソン処理を使用してメッシュを作成
-        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-            ptCloud, depth=8)
+        # # 法線情報を計算
+        # ptCloud.estimate_normals()
 
-        # メッシュを表示
-        o3d.visualization.draw_geometries([mesh])
+        # # ポワソン処理を使用してメッシュを作成
+        # mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
+        #     ptCloud, depth=8)
+
+        # # メッシュを表示
+        # o3d.visualization.draw_geometries([mesh])
 
 
 if __name__ == "__main__":
@@ -46,7 +49,8 @@ if __name__ == "__main__":
     print(f"PROJECT_DIR_PATH: {PROJECT_DIR_PATH}")
     print(f"PLY_DIR_PATH:     {PLY_DIR_PATH}")
 
-    ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15png.asc")
+    # ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15png.npy")
+    ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15.asc")
     ms = MakeSurface(ply_file_path)
     ms.make_surface()
     print("終了")

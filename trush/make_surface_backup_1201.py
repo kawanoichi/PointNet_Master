@@ -362,43 +362,34 @@ class MakeSurface:
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
         plt.savefig(save_path)
 
-        """
-        mesh
-        """
-        # 新しい法線ベクトルの代入
-        point_cloud.normals = o3d.utility.Vector3dVector(normals)
-
-        # 近傍距離を計算
-        distances = point_cloud.compute_nearest_neighbor_distance()
-
-        # 法線の表示
-        o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
-
-        # 近傍距離の平均
-        avg_dist = np.mean(distances)
-
-        # 半径
-        radius = 2*avg_dist
-
-        # [半径,直径]
-        radii = [radius, radius * 2]
-
-        # 三角形メッシュを計算する
-        # o3d.utility.DoubleVector:numpy配列をopen3D形式に変換
-        recMeshBPA = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
-            point_cloud, o3d.utility.DoubleVector(radii))
-
-        # geometry.Geometry オブジェクトのリストを描画する関数
-        o3d.visualization.draw_geometries([recMeshBPA])
+        # 座標と法線ベクトルをopen3dの形式に変換
+        # mesh = o3d.geometry.TriangleMesh()
+        # mesh.vertices = o3d.utility.Vector3dVector(points)
+        # mesh.vertex_normals = o3d.utility.Vector3dVector(normals)  # ここに法線ベクトルを入れる
+        # print("mesh:\n", mesh)
         
-        # 生成したメッシュをPLYファイルに保存
-        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'output_mesh.ply')
-        o3d.io.write_triangle_mesh(save_path, recMeshBPA)
+        
+        # PLYファイルに保存
+        # save_path = os.path.join(PROJECT_DIR_PATH, "ply_data", 'mesh.ply')
+        # o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
 
+        """
+        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
+        o3d.visualization.draw_geometries([point_cloud, mesh]) # 点群の表示
+        # o3d.visualization.draw_geometries([mesh]) # メッシュの表示
+        # """
 
 
+        # pcd = o3d.geometry.PointCloud()
+        # pcd.points = o3d.utility.Vector3dVector(points)
+        # pcd.normals = o3d.utility.Vector3dVector(normals)
 
+        # # 法線ベクトルから三角形メッシュを構築
+        # mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd, depth=8)
+
+        # # メッシュを表示
+        # o3d.visualization.draw_geometries([mesh])
 
 
 if __name__ == "__main__":
@@ -420,6 +411,10 @@ if __name__ == "__main__":
     print(line)
 
     file_name = "e50_p2048_airplane_01png.npy"
+    # file_name = "e50_p2048_test_image_airplane.npy"
+    # file_name = "e50_p2048_airplane2_15png.npy"
+    # file_name = "e50_p2048_airplane_00png.npy"
+    # file_name = "e50_p1024_chair_00png.npy"
     # file_name = ""
 
     ms = MakeSurface(point_file_dir=PLY_DIR_PATH,

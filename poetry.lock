@@ -1611,6 +1611,17 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=3.0.3)", "mypy (>=1.6.0)", "pre-commit", "pytest (>=7.0,<7.5)", "pytest-mock", "pytest-mypy-testing"]
 
 [[package]]
+name = "tripy"
+version = "1.0.0"
+description = "Simple polygon triangulation"
+optional = false
+python-versions = "*"
+files = [
+    {file = "tripy-1.0.0-py2.py3-none-any.whl", hash = "sha256:c6a8ea289e7526695edb87ac628d50f38342fbd7840b0ce27492238b65dd54d6"},
+    {file = "tripy-1.0.0-py3-none-any.whl", hash = "sha256:13f861a47a2f6626137b55cf06b2a15d147bbfac7d80c53d59c5b557a59b24ec"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.8.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -1683,4 +1694,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f300846d9eee513339341ce8becd3ec2f826697207a5f3121cfb64fa809489bd"
+content-hash = "f748d82047f0ed84515c491929463ed4343a8a0d22d1e23564922eb65b1579fd"

@@ -17,6 +17,7 @@ addict = "^2.4.0"
 pandas = "^2.1.3"
 tqdm = "^4.66.1"
 autopep8 = "^2.0.4"
+tripy = "^1.0.0"
 
 
 [build-system]

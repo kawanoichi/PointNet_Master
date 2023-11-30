@@ -34,7 +34,6 @@ class MakeSurface:
         # radius:半径, max_nn:検索を行う近隣の数
         ptCloud.estimate_normals(
             search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-        # search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
 
         # 点の法線の方向一貫性の考慮
         ptCloud.orient_normals_consistent_tangent_plane(60)
@@ -68,8 +67,7 @@ if __name__ == "__main__":
     print(f"PROJECT_DIR_PATH: {PROJECT_DIR_PATH}")
     print(f"PLY_DIR_PATH:     {PLY_DIR_PATH}")
 
-    # ply_file_path = os.path.join(PLY_DIR_PATH, "point_cloud.ply")
-    ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15png.asc")
+    ply_file_path = os.path.join(PLY_DIR_PATH, "e50_p2048_airplane2_15png.ply")
     ms = MakeSurface(ply_file_path)
     ms.make_surface()
     print("終了")

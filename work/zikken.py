@@ -5,60 +5,47 @@ import open3d as o3d
 import matplotlib.pyplot as plt
 import os
 import cv2
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import tripy
+
 
 # from pyntcloud import PyntCloud
 from scipy.spatial import Delaunay
-
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
 PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")
 
 
-def create_mesh():
-    # # npyファイルから点群データを読み込む
-    # point_cloud_data = np.load("path/to/point_cloud.npy")
-
-    # # Numpy配列からOpen3Dの点群オブジェクトを作成
-    # point_cloud = o3d.geometry.PointCloud()
-    # point_cloud.points = o3d.utility.Vector3dVector(point_cloud_data)
-
-    # # メッシュ生成（Poisson Surface Reconstructionを使用）
-    # mesh, _ = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
-
-    # # メッシュの保存
-    # o3d.io.write_triangle_mesh("path/to/output_mesh.ply", mesh)
-
-    # 仮の点群データを生成
-    np.random.seed(0)
-    points = np.random.rand(1024, 3)
-
-    # デラウン三角形分割を行い、メッシュ情報を生成
-    triangulation = Delaunay(points[:, :2])
-    faces = triangulation.simplices
-
-    # 法線ベクトルの生成（仮のデータなので簡単に単位法線）
-    normals = np.cross(points[faces[:, 1]] - points[faces[:, 0]], points[faces[:, 2]] - points[faces[:, 0]])
-    normals /= np.linalg.norm(normals, axis=1)[:, np.newaxis]
-
-    # 座標と法線ベクトルをopen3dの形式に変換
-    mesh = o3d.geometry.TriangleMesh()
-    mesh.vertices = o3d.utility.Vector3dVector(points)
-    mesh.vertex_normals = o3d.utility.Vector3dVector(normals)
-
-    # PLYファイルに保存
-    save_path = os.path.join(PROJECT_DIR_PATH, "ply_data", 'zikken.ply')
-    o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
-
 def zikken():
-    arr = np.arange(3*8).reshape(8,3)
-    index = np.where(((arr == [0,1,2]) | (arr == [9,10,11])).all(axis=1))[0]
-    print(arr)
-    print(f"index: {index}")
+    # 仮の点群データ（x, y, z座標）
+    points = np.array([
+        [0, 0, 0],
+        [1, 0, 0],
+        [1, 1, 0],
+        [0, 1, 0],
+        [0.5, 0.5, 1]
+    ])
+
+    # Delaunay 三角形分割
+    triangles = Delaunay(points).simplices
+
+    # 三角形メッシュを描画
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    for triangle in triangles:
+        poly3d = [[points[i, 0], points[i, 1], points[i, 2]] for i in triangle]
+        ax.add_collection3d(Poly3DCollection([poly3d], facecolors='cyan', linewidths=1, edgecolors='r', alpha=.25))
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    plt.show()  
 
 if __name__ == "__main__":
     print("実験")
-    # create_mesh()
     zikken()
     print("完了")
     

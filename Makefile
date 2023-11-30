@@ -32,8 +32,10 @@ check_gpu:
 # ソースコード実行
 surface_run:
 	 poetry run python3 work/make_surface.py
-vectors:
-	 poetry run python3 work/vectors_26.py
+mesh:
+	 poetry run python3 trush/mesh.py
+mesh2:
+	 poetry run python3 trush/mesh_02.py
 zikken:
 	 poetry run python3 work/zikken.py
 
