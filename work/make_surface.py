@@ -111,6 +111,10 @@ class MakeSurface:
                                   self.fig_horizontal,
                                   self.graph_num,
                                   projection='3d')
+        plt.xlim(-0.3, 0.3)
+        plt.ylim(-0.3, 0.3)
+        ax.set_zlim(-0.3, 0.3)
+        
         self.graph_num += 1
 
         plt.title(title)
@@ -207,10 +211,11 @@ class MakeSurface:
 
         # 最も多い要素を含むグループの点をグラフに追加
         vector_index = np.argmax(self.count_vector_class)
+        print(f"aaa:{np.where(self.groupe == vector_index)}")
         max_grope_points = points[np.where(self.groupe == vector_index)]
         self.show_point(max_grope_points, title="points of many vector groupe")
-        print(
-            f"self.vectors_26[vector_index]: {self.vectors_26[vector_index]}")
+        # print(
+        #     f"self.vectors_26[vector_index]: {self.vectors_26[vector_index]}")
 
         self.show_point_2D(max_grope_points, title="2D")
         
@@ -277,7 +282,6 @@ class MakeSurface:
 
         if new_line is not None:
             new_line = new_line.reshape(new_line.shape[0], 1, 2)
-            # print(f"len(lines): {len(lines)}")
             for rho, theta in new_line.squeeze(axis=1):
                 ImaP.draw_line(img, theta, rho)
         else:
@@ -299,9 +303,26 @@ class MakeSurface:
         for i, point in enumerate(point_of_wing):
             if abs(point[0] - new_line[0,0,0]) < thre:
                 classed_points = np.vstack((classed_points, point))
-
-
+        classed_points = classed_points[1:]
         classed_points = (classed_points - 500) * 0.001
+        
+        print("points", points.shape)
+        for i, point in enumerate(classed_points):
+            print("point", point.shape)
+            index = np.where((points == point).all(axis=1))[0]
+            print(f"index: {index}")
+            
+            if i == 5:
+                break
+        
+        
+        
+        point_of_wing = max_grope_points * 1000 + 500
+        thre_range_max = new_line[0,0,0] + 10
+        thre_range_min = new_line[0,0,0] + 10
+
+        print(f"normals.shape: {normals.shape}")
+        print(f"point_of_wing.shape: {point_of_wing.shape}")
 
         self.show_point(classed_points, title="Part of wing")
 
@@ -346,8 +367,8 @@ class MakeSurface:
 
         # 点群や法線ベクトルの表示
         # plt.show()
-        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
-        plt.savefig(save_path)
+        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
+        # plt.savefig(save_path)
 
         # 座標と法線ベクトルをopen3dの形式に変換
         mesh = o3d.geometry.TriangleMesh()

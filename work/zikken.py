@@ -51,15 +51,10 @@ def create_mesh():
     o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
 def zikken():
-    plt.ioff() 
-    # 画像の読み込み
-    img = cv2.imread('work/test.png') 
-    # カラーデータの色空間の変換 
-    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)) 
-
-    # 画像の表示
-    plt.show()
-
+    arr = np.arange(3*8).reshape(8,3)
+    index = np.where(((arr == [0,1,2]) | (arr == [9,10,11])).all(axis=1))[0]
+    print(arr)
+    print(f"index: {index}")
 
 if __name__ == "__main__":
     print("実験")
