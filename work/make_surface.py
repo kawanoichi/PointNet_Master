@@ -382,11 +382,13 @@ class MakeSurface:
 
         # [半径,直径]
         radii = [radius, radius * 2]
+        
+        # o3d.utility.DoubleVector:numpy配列をopen3D形式に変換
+        radii = o3d.utility.DoubleVector(radii)
 
         # 三角形メッシュを計算する
-        # o3d.utility.DoubleVector:numpy配列をopen3D形式に変換
         recMeshBPA = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
-            point_cloud, o3d.utility.DoubleVector(radii))
+            point_cloud, radii)
 
         # geometry.Geometry オブジェクトのリストを描画する関数
         o3d.visualization.draw_geometries([recMeshBPA])
@@ -394,11 +396,6 @@ class MakeSurface:
         # 生成したメッシュをPLYファイルに保存
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'output_mesh.ply')
         o3d.io.write_triangle_mesh(save_path, recMeshBPA)
-
-
-
-
-
 
 
 if __name__ == "__main__":
