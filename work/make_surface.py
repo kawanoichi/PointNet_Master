@@ -10,8 +10,8 @@ $ make surface_run
 """
 import numpy as np
 import os
-import matplotlib
-matplotlib.use('TkAgg')
+# import matplotlib
+# matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import open3d as o3d
 # from sklearn.linear_model import RANSACRegressor
@@ -211,7 +211,6 @@ class MakeSurface:
 
         # 最も多い要素を含むグループの点をグラフに追加
         vector_index = np.argmax(self.count_vector_class)
-        print(f"aaa:{np.where(self.groupe == vector_index)}")
         max_grope_points = points[np.where(self.groupe == vector_index)]
         self.show_point(max_grope_points, title="points of many vector groupe")
         # print(
@@ -239,26 +238,25 @@ class MakeSurface:
             cv2.circle(img, (x, y), 2, 0, -1)
         
         point_img = img.copy()
-        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
-        cv2.imwrite(save_path, point_img)
+        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
+        # cv2.imwrite(save_path, point_img)
 
         # エッジ検出
         edges = cv2.Canny(img, 50, 150)
         
         # ハフ変換
-        # rho, theta = line
+        # NOTE: rho, theta = line
         lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=240)
         
         if lines is not None:
-            print(f"len(lines): {len(lines)}")
             for rho, theta in lines.squeeze(axis=1):
                 ImaP.draw_line(img, theta, rho)
         else:
             print("Error: 線が見つかりません")
             return normals
         
-        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken2.png')
-        cv2.imwrite(save_path, img)
+        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken2.png')
+        # cv2.imwrite(save_path, img)
 
         """
         重複している線を削除
@@ -296,34 +294,21 @@ class MakeSurface:
         点群の割り当て
         - 一枚のラインずつみていく？
         """
-        point_of_wing = max_grope_points * 1000 + 500
         thre = 10
         classed_points = np.zeros((1,3))
 
-        for i, point in enumerate(point_of_wing):
-            if abs(point[0] - new_line[0,0,0]) < thre:
+        for i, point in enumerate(points):
+            point2 = point *1000 + 500
+            if abs(point2[0] - new_line[0,0,0]) < thre:
+                # lineを構成する座標を抽出
                 classed_points = np.vstack((classed_points, point))
+                # 法線ベクトルの修正(逆にする)
+                normals[i] *= -1
+            if abs(point2[0] - new_line[2,0,0]) < thre:
+                # 法線ベクトルの修正(逆にする)
+                normals[i] *= -1
         classed_points = classed_points[1:]
-        classed_points = (classed_points - 500) * 0.001
         
-        print("points", points.shape)
-        for i, point in enumerate(classed_points):
-            print("point", point.shape)
-            index = np.where((points == point).all(axis=1))[0]
-            print(f"index: {index}")
-            
-            if i == 5:
-                break
-        
-        
-        
-        point_of_wing = max_grope_points * 1000 + 500
-        thre_range_max = new_line[0,0,0] + 10
-        thre_range_min = new_line[0,0,0] + 10
-
-        print(f"normals.shape: {normals.shape}")
-        print(f"point_of_wing.shape: {point_of_wing.shape}")
-
         self.show_point(classed_points, title="Part of wing")
 
         return normals
@@ -365,23 +350,26 @@ class MakeSurface:
         # 法線ベクトルの作成・編集
         normals = self.edit_normals(points, np_normals)
 
+        # 編集後の法線ベクトルを表示
+        self.show_normals(points, normals, title="After Normals")
+
         # 点群や法線ベクトルの表示
         # plt.show()
-        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
-        # plt.savefig(save_path)
+        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
+        plt.savefig(save_path)
 
         # 座標と法線ベクトルをopen3dの形式に変換
         mesh = o3d.geometry.TriangleMesh()
         mesh.vertices = o3d.utility.Vector3dVector(points)
-        mesh.vertex_normals = o3d.utility.Vector3dVector(np_normals)  # ここに法線ベクトルを入れる
+        mesh.vertex_normals = o3d.utility.Vector3dVector(normals)  # ここに法線ベクトルを入れる
         
         # PLYファイルに保存
         # save_path = os.path.join(PROJECT_DIR_PATH, "ply_data", 'mesh.ply')
         # o3d.io.write_triangle_mesh(save_path, mesh, write_ascii=True)
 
 
-        """
-        mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
+        # """
+        # mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(point_cloud)
         o3d.visualization.draw_geometries([point_cloud]) # 点群の表示
         o3d.visualization.draw_geometries([mesh]) # メッシュの表示
         # """
