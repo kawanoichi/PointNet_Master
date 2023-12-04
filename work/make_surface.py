@@ -19,13 +19,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import matplotlib
-matplotlib.use('TkAgg')
+# 最初は以下を実行する
+# $ sudo apt-get install python3-tk
+matplotlib.use('TKAgg')
 # from sklearn.linear_model import RANSACRegressor
 
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
-PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points2")
+PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")
 
 
 class MakeSurface:
@@ -416,10 +418,10 @@ if __name__ == "__main__":
         print(massage)
     print(line)
 
-    # file_name = "e50_p2048_airplane_01png.npy"
+    file_name = "e50_p2048_airplane_01png.npy"
     # file_name = "e100_p1024_airplane_4th"
     # file_name = "e100_p1024_airplane_10th"
-    file_name = "e100_p1024_airplane_02png.npy"
+    # file_name = "e100_p1024_airplane_02png.npy"
     # file_name = ""
 
     ms = MakeSurface(point_file_dir=PLY_DIR_PATH,
