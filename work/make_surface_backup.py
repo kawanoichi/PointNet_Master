@@ -5,21 +5,18 @@
 実行コマンド
 $ make surface_run
 """
+from image_processing import ImageProcessing as ImaP
+import rotate_coordinate as rotate
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from scipy.spatial import Delaunay
+import cv2
+import open3d as o3d
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import matplotlib
 matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import open3d as o3d
 # from sklearn.linear_model import RANSACRegressor
-import cv2
-from scipy.spatial import Delaunay
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-
-
-import rotate_coordinate as rotate
-from image_processing import ImageProcessing as ImaP
 
 
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -115,7 +112,7 @@ class MakeSurface:
         plt.xlim(-0.3, 0.3)
         plt.ylim(-0.3, 0.3)
         ax.set_zlim(-0.3, 0.3)
-        
+
         self.graph_num += 1
 
         plt.title(title)
@@ -167,9 +164,9 @@ class MakeSurface:
         # 法線ベクトルをプロット
         scale = 0.1  # 矢印のスケール
         for i in range(len(points)):
-            if points[i, 0] < -0.05: # 一部を表示
+            if points[i, 0] < -0.05:  # 一部を表示
                 ax.quiver(points[i, 0], points[i, 1], points[i, 2],
-                            normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
+                          normals[i, 0]*scale, normals[i, 1]*scale, normals[i, 2]*scale, color='r', length=1.0, normalize=True)
 
     def edit_normals(self, points: np.ndarray, normals=None) -> None:
         """法線ベクトルに関連する関数.
@@ -187,7 +184,6 @@ class MakeSurface:
 
         # グラフの追加
         self.show_normals(points, normals, title="Normals")
-
 
         """
         点群を法線の向きでグループ分け
@@ -218,13 +214,12 @@ class MakeSurface:
         #     f"self.vectors_26[vector_index]: {self.vectors_26[vector_index]}")
 
         self.show_point_2D(max_grope_points, title="2D")
-        
+
         # ベクトルの符号を逆にしてみる
         # invert_some_normals = normals.copy()
         # invert_some_normals[np.where(self.groupe == vector_index)] *= -1
         # self.show_normals(points, invert_some_normals, title="invert vector")
-        
-        
+
         """
         ハフ変換
         """
@@ -237,25 +232,25 @@ class MakeSurface:
             x = int(point[0] * 1000) + 500
             y = int(point[1] * 1000) + 500
             cv2.circle(img, (x, y), 2, 0, -1)
-        
+
         point_img = img.copy()
         # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken.png')
         # cv2.imwrite(save_path, point_img)
 
         # エッジ検出
         edges = cv2.Canny(img, 50, 150)
-        
+
         # ハフ変換
         # NOTE: rho, theta = line
         lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=240)
-        
+
         if lines is not None:
             for rho, theta in lines.squeeze(axis=1):
                 ImaP.draw_line(img, theta, rho)
         else:
             print("Error: 線が見つかりません")
             return normals
-        
+
         # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken2.png')
         # cv2.imwrite(save_path, img)
 
@@ -263,9 +258,9 @@ class MakeSurface:
         重複している線を削除
         """
         # lineを並び替え
-        lines_reshape = lines.reshape(5,2)
-        new_line = lines_reshape[np.argsort(lines_reshape[:,0])]
-        
+        lines_reshape = lines.reshape(5, 2)
+        new_line = lines_reshape[np.argsort(lines_reshape[:, 0])]
+
         pre_rho = 0
         thre = 10
         delete_index = []
@@ -274,9 +269,9 @@ class MakeSurface:
             if abs(pre_rho - rho) < thre:
                 delete_index.append(i)
             pre_rho = rho
-                
+
         new_line = np.delete(new_line, delete_index, 0)
-        
+
         img = point_img.copy()
 
         if new_line is not None:
@@ -286,30 +281,29 @@ class MakeSurface:
         else:
             print("Error: 線が見つかりません")
             return normals
-        
+
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'zikken3.png')
         cv2.imwrite(save_path, img)
-
 
         """
         点群の割り当て
         - 一枚のラインずつみていく？
         """
         thre = 10
-        classed_points = np.zeros((1,3))
+        classed_points = np.zeros((1, 3))
 
         for i, point in enumerate(points):
-            point2 = point *1000 + 500
-            if abs(point2[0] - new_line[0,0,0]) < thre:
+            point2 = point * 1000 + 500
+            if abs(point2[0] - new_line[0, 0, 0]) < thre:
                 # lineを構成する座標を抽出
                 classed_points = np.vstack((classed_points, point))
                 # 法線ベクトルの修正(逆にする)
                 normals[i] *= -1
-            if abs(point2[0] - new_line[2,0,0]) < thre:
+            if abs(point2[0] - new_line[2, 0, 0]) < thre:
                 # 法線ベクトルの修正(逆にする)
                 normals[i] *= -1
         classed_points = classed_points[1:]
-        
+
         self.show_point(classed_points, title="Part of wing")
 
         return normals
@@ -369,7 +363,8 @@ class MakeSurface:
         distances = point_cloud.compute_nearest_neighbor_distance()
 
         # 法線の表示
-        o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
+        o3d.visualization.draw_geometries(
+            [point_cloud], point_show_normal=True)
 
         # 近傍距離の平均
         avg_dist = np.mean(distances)
@@ -379,7 +374,7 @@ class MakeSurface:
 
         # [半径,直径]
         radii = [radius, radius * 2]
-        
+
         # o3d.utility.DoubleVector:numpy配列をopen3D形式に変換
         radii = o3d.utility.DoubleVector(radii)
 
@@ -389,7 +384,7 @@ class MakeSurface:
 
         # geometry.Geometry オブジェクトのリストを描画する関数
         o3d.visualization.draw_geometries([recMeshBPA])
-        
+
         # 生成したメッシュをPLYファイルに保存
         save_path = os.path.join(PROJECT_DIR_PATH, "work", 'output_mesh.ply')
         o3d.io.write_triangle_mesh(save_path, recMeshBPA)
@@ -417,7 +412,7 @@ if __name__ == "__main__":
     file_name = "e100_p1024_airplane_4th"
     # file_name = "e100_p1024_airplane_10th"
     # file_name = ""
-    
+
     ms = MakeSurface(point_file_dir=PLY_DIR_PATH,
                      point_file_name=file_name)
     ms.main()

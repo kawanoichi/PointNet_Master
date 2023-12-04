@@ -184,7 +184,8 @@ class Predict_Point:
             gen.cpu().eval()
             # 学習済みモデルの読み込み
             with open(pickle_path, "rb") as f:
-                gen.load_state_dict(torch.load(f, map_location=torch.device('cpu')))
+                gen.load_state_dict(torch.load(
+                    f, map_location=torch.device('cpu')))
             # torch.Tensorに計算グラフの情報を保持させる
             image = Variable(image.float())
             device = torch.device('cpu')  # CPUを使用するためのデバイス

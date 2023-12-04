@@ -36,20 +36,17 @@ def zikken():
 
     for triangle in triangles:
         poly3d = [[points[i, 0], points[i, 1], points[i, 2]] for i in triangle]
-        ax.add_collection3d(Poly3DCollection([poly3d], facecolors='cyan', linewidths=1, edgecolors='r', alpha=.25))
+        ax.add_collection3d(Poly3DCollection(
+            [poly3d], facecolors='cyan', linewidths=1, edgecolors='r', alpha=.25))
 
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
 
-    plt.show()  
+    plt.show()
+
 
 if __name__ == "__main__":
     print("実験")
     zikken()
     print("完了")
-    
-
-
-
-
