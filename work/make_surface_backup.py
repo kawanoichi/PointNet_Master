@@ -1,10 +1,7 @@
 """Open3Dで3D点群をメッシュ(ポリゴン)に変換するプログラム.
-plyファイルからmeshを生成する.
-参考URL
-    Open3DとPythonによる実装
-    https://tecsingularity.com/open3d/bpa/
-    PLYファイルについて
-    https://programming-surgeon.com/imageanalysis/ply-python/
+
+最初の画像("e50_p2048_airplane_01png.npy")はこのプログラムでうまくいく
+
 実行コマンド
 $ make surface_run
 """
@@ -18,7 +15,7 @@ import open3d as o3d
 import cv2
 from scipy.spatial import Delaunay
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from make_surface_param import Param
+
 
 
 import rotate_coordinate as rotate
@@ -348,21 +345,19 @@ class MakeSurface:
         # 法線情報を計算
         point_cloud.estimate_normals()
 
-        # 法線ベクトルの編集(numpy配列に変換)
-        normals = np.asarray(point_cloud.normals)
+        # 法線ベクトルの編集
+        np_normals = np.asarray(point_cloud.normals)
 
         # 法線ベクトルの作成・編集
-        if Param.edit_normal:
-            normals = self.edit_normals(points, normals)
+        normals = self.edit_normals(points, np_normals)
 
         # 編集後の法線ベクトルを表示
         self.show_normals(points, normals, title="After Normals")
 
         # 点群や法線ベクトルの表示
-        if Param.work_process:
-            plt.show()
-            save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
-            plt.savefig(save_path)
+        plt.show()
+        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'result.png')
+        # plt.savefig(save_path)
 
         """
         mesh
@@ -374,8 +369,7 @@ class MakeSurface:
         distances = point_cloud.compute_nearest_neighbor_distance()
 
         # 法線の表示
-        if Param.show_normal:
-            o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
+        o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
 
         # 近傍距離の平均
         avg_dist = np.mean(distances)
@@ -393,13 +387,12 @@ class MakeSurface:
         recMeshBPA = o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(
             point_cloud, radii)
 
-        # geometry.Geometry オブジェクトのリストを描画する関数(meshの表示)
-        if Param.show_mesh:
-            o3d.visualization.draw_geometries([recMeshBPA])
+        # geometry.Geometry オブジェクトのリストを描画する関数
+        o3d.visualization.draw_geometries([recMeshBPA])
         
         # 生成したメッシュをPLYファイルに保存
-        # save_path = os.path.join(PROJECT_DIR_PATH, "work", 'output_mesh.ply')
-        # o3d.io.write_triangle_mesh(save_path, recMeshBPA)
+        save_path = os.path.join(PROJECT_DIR_PATH, "work", 'output_mesh.ply')
+        o3d.io.write_triangle_mesh(save_path, recMeshBPA)
 
 
 if __name__ == "__main__":
@@ -420,8 +413,8 @@ if __name__ == "__main__":
         print(massage)
     print(line)
 
-    file_name = "e50_p2048_airplane_01png.npy"
-    # file_name = "e100_p1024_airplane_4th"
+    # file_name = "e50_p2048_airplane_01png.npy"
+    file_name = "e100_p1024_airplane_4th"
     # file_name = "e100_p1024_airplane_10th"
     # file_name = ""
     
