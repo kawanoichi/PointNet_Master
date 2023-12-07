@@ -109,13 +109,11 @@ class Predict_Point:
 
     def predict(self,
                 originl_img: bool = True,
-                gt_save: bool = False,
-                use_gpu=True):
+                gt_save: bool = False):
         """学習済みモデルを使用して画像から点群を生成する.
         Args:
             originl_img (bool): オリジナル画像を使用する場合True
             gt_save (bool): グランドトゥルースを保存する場合True
-            use_gpu (bool): gpuを使用する場合True
         """
         if originl_img is False and gt_save is True:
             gt_save = False
@@ -205,25 +203,13 @@ class Predict_Point:
         # generatorクラスのインスタンス化
         gen = generator(self.__num_points)
 
-        # eval():評価モード
-        if use_gpu:
-            gen.cuda().eval()
-            # 学習済みモデルの読み込み
-            with open(pickle_path, "rb") as f:
-                gen.load_state_dict(torch.load(f))
-            # torch.Tensorに計算グラフの情報を保持させる
-            image = Variable(image.float())
-            image = image.cuda()
-        else:
-            gen.cpu().eval()
-            # 学習済みモデルの読み込み
-            with open(pickle_path, "rb") as f:
-                gen.load_state_dict(torch.load(
-                    f, map_location=torch.device('cpu')))
-            # torch.Tensorに計算グラフの情報を保持させる
-            image = Variable(image.float())
-            device = torch.device('cpu')  # CPUを使用するためのデバイス
-            image = image.to(device)
+        gen.cuda().eval()
+        # 学習済みモデルの読み込み
+        with open(pickle_path, "rb") as f:
+            gen.load_state_dict(torch.load(f))
+        # torch.Tensorに計算グラフの情報を保持させる
+        image = Variable(image.float())
+        image = image.cuda()
 
         # 点群生成
         points, _, _, _ = gen(image)
@@ -249,6 +235,6 @@ if __name__ == "__main__":
     pp = Predict_Point(predict_param_file)
 
     # 点群予測関数の実行
-    pp.predict(use_gpu=True)
+    pp.predict()
 
     print("終了")
