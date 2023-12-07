@@ -424,7 +424,7 @@ if __name__ == "__main__":
     # file_name = ""
 
     ms = MakeSurface(point_file_dir=PLY_DIR_PATH,
-                    point_file_name=file_name)
+                     point_file_name=file_name)
     ms.main()
 
     # 処理時間計測用

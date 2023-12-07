@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pointnet-master"
+name = "PointNet"
 version = "0.1.0"
 description = ""
 authors = ["kawanoichi"]
@@ -19,7 +19,6 @@ tqdm = "^4.66.1"
 autopep8 = "^2.0.4"
 tripy = "^1.0.0"
 torch = "^2.1.1"
-
 
 [build-system]
 requires = ["poetry-core"]

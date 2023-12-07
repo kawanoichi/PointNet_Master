@@ -15,9 +15,6 @@ import torch
 from torch.autograd import Variable
 from model import generator
 
-SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
-# PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
-
 
 class Predict_Point:
     """画像から3Dオブジェクトを生成するクラス."""
@@ -107,41 +104,23 @@ class Predict_Point:
         print("*gt_save_folder  :", self.__gt_save_folder)
         print("-"*50)
 
-    def predict(self,
-                originl_img: bool = True,
-                gt_save: bool = False,
-                use_gpu=True):
-        """学習済みモデルを使用して画像から点群を生成する.
-        Args:
-            originl_img (bool): オリジナル画像を使用する場合True
-            gt_save (bool): グランドトゥルースを保存する場合True
-            use_gpu (bool): gpuを使用する場合True
-        """
-        if originl_img is False and gt_save is True:
-            gt_save = False
-
+    def predict(self, original_image: bool = True, show: bool = False, use_gpu=True):
+        """学習済みモデルを使用して画像から点群を生成する."""
         # 入力画像path
-        if not originl_img:
-            file_path = os.path.join(self.__category_id, self.__object_id)
-            read_img_path = os.path.join(self.__base_path,
-                                         "ShapeNetRendering",
-                                         file_path,
-                                         "rendering",
-                                         self.__image_name)
-        else:
-            read_img_path = os.path.join(
-                SCRIPT_DIR_PATH, "test_image_airplane.png")
-            if not os.path.exists(read_img_path):
-                print("Error: image is not exist")
-                print("Search path is ", read_img_path)
-                exit()
 
-        if gt_save:
-            # グランドトゥルースpath
-            read_gt_path = os.path.join(self.__base_path,
-                                        "ShapeNet_pointclouds",
-                                        file_path,
-                                        "pointcloud_"+str(self.__num_points)+".npy")
+        file_path = os.path.join(self.__category_id, self.__object_id)
+
+        read_img_path = os.path.join(self.__base_path,
+                                     "ShapeNetRendering",
+                                     file_path,
+                                     "rendering",
+                                     self.__image_name)
+
+        # グランドトゥルースpath
+        # read_gt_path = os.path.join(self.__base_path,
+        #                             "ShapeNet_pointclouds",
+        #                             file_path,
+        #                             "pointcloud_"+str(self.__num_points)+".npy")
 
         # 学習済みモデルpath
         pickle_path = os.path.join(".",
@@ -161,33 +140,27 @@ class Predict_Point:
         print("pre_save_path", pre_save_path)
 
         # gtの保存path
-        if gt_save:
-            try:
-                os.makedirs(self.__gt_save_folder)
-            except OSError:
-                pass
-            save_name = "pointcloud_%d_%s.asc" % (
-                self.__num_points, self.__category)
-            gt_save_path = os.path.join(self.__gt_save_folder, save_name)
-            print("gt_save_path", gt_save_path)
+        try:
+            os.makedirs(self.__gt_save_folder)
+        except OSError:
+            pass
+        save_name = "pointcloud_%d_%s.asc" % (
+            self.__num_points, self.__category)
+        gt_save_path = os.path.join(self.__gt_save_folder, save_name)
+        print("gt_save_path", gt_save_path)
 
-            # gtの保存
-            gt = (np.load(read_gt_path)).astype('float32')
-            np.savetxt(gt_save_path, gt)
-
+        # gtの保存
+        # gt = (np.load(read_gt_path)).astype('float32')
+        # np.savetxt(gt_save_path, gt)
+        # """
         cudnn.benchmark = True
 
         # 画像読み込み(128, 128, 3)
-        image = cv2.imread(read_img_path)
-        # print(f"image shape is {image.shape}")
-
-        image = cv2.resize(image, (128, 128))
-        # print(f"image shape is {resized_image.shape}")
-        # image = self.read_image(read_img_path, (128, 128))
-        
-        image = image[4:-5, 4:-5, :3]
-        # image = cv2.imread(read_img_path)[4:-5, 4:-5, :3]
-        # exit("")
+        try:
+            image = cv2.imread(read_img_path)[4:-5, 4:-5, :3]
+        except:
+            print("Error: Image Read Error")
+            exit()
 
         # BGRからRGBへの変換
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -239,6 +212,54 @@ class Predict_Point:
         # 予測座標の保存
         np.save(pre_save_path, predict_points)
         np.savetxt(pre_save_path[:-3]+"asc", predict_points)
+
+        # showがTrueの場合、予測点群を表示する
+        if show:
+            Predict_Point.show_points(predict_points)
+        # """
+
+    # @staticmethod
+    # def show_points(predict_points, read_gt_path=None):
+    #     """生成した点群オブジェクトを表示する."""
+    #     print("type(predict_points)", type(predict_points))
+    #     fig = plt.figure()
+    #     fig.suptitle("PREDICT")
+    #     ax = fig.gca(projection="3d")
+    #     ax.set_xlim(-0.5, 0.5)
+    #     ax.set_ylim(-0.5, 0.5)
+    #     ax.set_zlim(-0.5, 0.5)
+    #     for i in range(len(predict_points)):
+    #         ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c = "blue", depthshade=True, s=1)
+    #         # ax.scatter(predict_points[i, 1], predict_points[i, 2], predict_points[i, 0], c="#00008B", depthshade=True, s=10)
+    #     ax.axis("off")
+    #     ax.view_init(azim=90, elev=-160)
+    #     plt.show()
+
+    #     if not read_gt_path is None:
+    #         fig = plt.figure()
+    #         fig.suptitle("GT")
+    #         ax2 = fig.gca(projection="3d")
+    #         ax2.set_xlim(-0.5, 0.5)
+    #         ax2.set_ylim(-0.5, 0.5)
+    #         ax2.set_zlim(-0.5, 0.5)
+    #         for i in range(len(read_gt_path)):
+    #             ax2.scatter(read_gt_path[i, 1], read_gt_path[i, 2], read_gt_path[i, 0], c="#00008B", depthshade=True)
+    #         ax2.axis("off")
+    #         ax2.view_init(azim=90, elev=-160)
+    #         plt.show()
+
+    # @staticmethod
+    # def load_points(coord_file:str)->None:
+    #     """保存されて座標から点群を生成し、表示する."""
+    #     # パラメータファイルが存在するかの確認
+    #     if not os.path.isfile(coord_file):
+    #         raise FileNotFoundError("No file '%s'" % coord_file)
+
+    #     # 点群座標の読み込み
+    #     points = np.load(coord_file)
+
+    #     # 点群を表示
+    #     Predict_Point.show_points(points)
 
 
 if __name__ == "__main__":

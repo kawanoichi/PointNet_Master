@@ -15,13 +15,10 @@ format:
 	poetry run python3 -m autopep8 -i -r work/
 
 train:
-	python3 train.py
+	poetry run python3 train.py
 
 predict:
 	poetry run python3 predict_point_shapenet.py
-
-# convert:
-# 	python3 convert_extension.py
 
 check_gpu:
 	@echo pytorch
@@ -29,13 +26,15 @@ check_gpu:
 	@echo tensorflow
 	python3 enviroment_check/check_tensor_gpu.py
 
-# ソースコード実行
 surface_run:
 	 poetry run python3 work/make_surface.py
+
 mesh:
 	 poetry run python3 trush/mesh.py
+
 mesh2:
 	 poetry run python3 trush/mesh_02.py
+
 zikken:
 	 poetry run python3 work/zikken.py
 
