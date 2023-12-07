@@ -124,7 +124,7 @@ def resnet50(pretrained=False, **kwargs):
 
 
 class generator(nn.Module):
-    def __init__(self, num_points=1024):
+    def __init__(self, num_points=1024, use_gpu=True):
         super(generator, self).__init__()
         self.resnet50 = resnet50(pretrained=True)
         self.num_points = num_points
@@ -134,6 +134,7 @@ class generator(nn.Module):
         self.fc2 = nn.Linear(512, 1024)
         self.fc3 = nn.Linear(1024, self.num_points * 3)
         self.th = nn.Tanh()
+        self.use_gpu = use_gpu
 
     def forward(self, x):
         batchsize = x.size()[0]
@@ -151,7 +152,10 @@ class generator(nn.Module):
         zmean = self.zmean(x)
         zlog = self.zlog(x)
         zsigma = torch.sqrt(torch.exp(zlog))
-        eps = torch.randn(zmean.size()).cuda()
+        if self.use_gpu:
+            eps = torch.randn(zmean.size()).cuda()
+        else:
+            eps = torch.randn(zmean.size())
         z = zmean + zsigma * eps
         x = F.leaky_relu(self.fc1(z))
         x = F.leaky_relu(self.fc2(x))

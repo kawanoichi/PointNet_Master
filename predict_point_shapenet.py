@@ -249,6 +249,6 @@ if __name__ == "__main__":
     pp = Predict_Point(predict_param_file)
 
     # 点群予測関数の実行
-    pp.predict(use_gpu=False)
+    pp.predict(use_gpu=True)
 
     print("終了")

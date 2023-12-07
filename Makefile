@@ -18,7 +18,8 @@ train:
 	poetry run python3 train.py
 
 predict:
-	poetry run python3 predict_point_shapenet.py
+	poetry run python3 predict_point_cpu.py
+# poetry run python3 predict_point_shapenet.py
 
 check_gpu:
 	@echo pytorch
