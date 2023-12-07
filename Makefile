@@ -15,11 +15,13 @@ format:
 	poetry run python3 -m autopep8 -i -r work/
 
 train:
-	poetry run python3 train.py
+	python3 train.py
 
-predict:
+predict-gpu:
+	python3 predict_point_gpu.py
+
+predict-cpu:
 	poetry run python3 predict_point_cpu.py
-# poetry run python3 predict_point_shapenet.py
 
 check_gpu:
 	@echo pytorch

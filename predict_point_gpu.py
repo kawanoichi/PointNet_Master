@@ -224,7 +224,7 @@ class Predict_Point:
 
         # 予測座標の保存
         np.save(pre_save_path, predict_points)
-        np.savetxt(pre_save_path[:-3]+"asc", predict_points)
+        # np.savetxt(pre_save_path[:-3]+"asc", predict_points)
 
 
 if __name__ == "__main__":
