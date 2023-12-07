@@ -24,7 +24,6 @@ import matplotlib
 matplotlib.use('TKAgg')
 # from sklearn.linear_model import RANSACRegressor
 
-
 SCRIPT_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR_PATH = os.path.dirname(SCRIPT_DIR_PATH)
 PLY_DIR_PATH = os.path.join(PROJECT_DIR_PATH, "predict_points")

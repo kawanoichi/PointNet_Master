@@ -18,10 +18,10 @@ train:
 	python3 train.py
 
 predict:
-	python3 predict_point_shapenet.py
+	poetry run python3 predict_point_shapenet.py
 
-convert:
-	python3 convert_extension.py
+# convert:
+# 	python3 convert_extension.py
 
 check_gpu:
 	@echo pytorch
